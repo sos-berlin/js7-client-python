@@ -1,8 +1,8 @@
 from typing import Literal, Optional
 
-from js7.model.public.client.common.audit_log import AuditLog
 from ...context import Context
 from ....model.private.api.endpoint import EndpointCall
+from ....model.public.client.common.audit_log import AuditLog
 from ....model.private.http.joc.joc_v_2_8_2 import (
     AuditParams as AuditParams_V_2_8_2,
     ClusterRestart as ClusterRestart_V_2_8_2,

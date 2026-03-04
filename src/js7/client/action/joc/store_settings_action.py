@@ -1,9 +1,9 @@
 import json
 from typing import Any, Dict, Optional
 
-from js7.model.public.client.common.audit_log import AuditLog
 from ...context import Context
 from ....model.private.api.endpoint import EndpointCall
+from ....model.public.client.common.audit_log import AuditLog
 from ....model.private.http.joc.joc_v_2_8_2 import (
     StoreSettingsFilter as StoreSettingsFilter_V_2_8_2,
     AuditParams as AuditParams_V_2_8_2,

@@ -1,5 +1,8 @@
 # JS7 Python Client
 
+[![PyPI version](https://img.shields.io/pypi/v/js7-client-python.svg)](https://pypi.org/project/js7-client-python/)
+[![Python versions](https://img.shields.io/pypi/pyversions/js7-client-python)](https://pypi.org/project/js7-client-python/)
+
 The JS7 Python Client provides methods for accessing the JS7 JOC REST API.
 Its functionality is based on the JS7 UNIX CLI: [JS7 UNIX CLI](https://github.com/sos-berlin/js7-cli-unix)
 
@@ -40,7 +43,8 @@ client = js7.Client(
 )
 ```
 
->[!TIP] SSL and Certificate-Based Authentication
+#### SSL and Certificate-Based Authentication
+
 >The code snippet shows authentication using Basic Auth.
 >However, the JS7 Python Client also supports certificate-based authentication, provided that a corresponding identity provider and account exist in JS7 JOC.
 >

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Literal, Optional
 from pydantic import BaseModel
 
-from js7.model.public.client.filter.element.folder import Folder
+from .....model.public.client.filter.element.folder import Folder
 
 
 class TasksFilter(BaseModel):

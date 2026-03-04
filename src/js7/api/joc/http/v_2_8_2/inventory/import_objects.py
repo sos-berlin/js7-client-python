@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
 from ......model.private.http.joc.joc_v_2_8_2 import OK
-from js7.model.private.api.endpoint import EndpointCall, EndpointDefinition
+from ......model.private.api.endpoint import EndpointCall, EndpointDefinition
 
 
 def import_objects(call: EndpointCall) -> OK:

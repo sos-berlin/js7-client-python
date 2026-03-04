@@ -5,7 +5,7 @@ from ....model.public.client.common.changes import Change, ChangeDependencies, C
 from ....model.public.client.enum.object_types import ObjectType
 from ....model.public.client.enum.operation_type import OperationType
 from ....model.private.api.endpoint import EndpointCall
-from js7.model.private.http.joc.joc_v_2_8_2 import (
+from ....model.private.http.joc.joc_v_2_8_2 import (
     GetDependenciesRequest as GetDependenciesRequest_V_2_8_2,
     GetDependenciesResponse as GetDependenciesResponse_V_2_8_2,
     OperationType as OperationType_V_2_8_2,

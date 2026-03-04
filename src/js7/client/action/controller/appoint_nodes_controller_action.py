@@ -6,7 +6,7 @@ from ....model.private.api.endpoint import EndpointCall
 from ....model.private.http.joc.joc_v_2_8_2 import (
     AuditParams as AuditParams_V_2_8_2,
     OK as OK_V_2_8_2,
-    URLParameter as URLParameter__V_2_8_2
+    URLParameter as URLParameter_V_2_8_2
 )
 
 from ....util.check_matching_version import check_matching_version
@@ -47,7 +47,7 @@ def _build_v_2_8_2_request(
     *, 
     controller_id: str, 
     audit_log: Optional[AuditLog]
-) -> URLParameter__V_2_8_2:
+) -> URLParameter_V_2_8_2:
     
     # Validates controller id
     if not controller_id:
@@ -61,7 +61,7 @@ def _build_v_2_8_2_request(
     ) if audit_log else None
     
     # Result
-    return URLParameter__V_2_8_2(
+    return URLParameter_V_2_8_2(
         controller_id=controller_id,
         audit_log=res_audit_log,
     )

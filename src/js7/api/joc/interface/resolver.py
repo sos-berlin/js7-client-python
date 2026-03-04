@@ -5,7 +5,7 @@ from typing import List
 
 from ....model.private.api.endpoint import EndpointDefinition
 
-from js7.util.check_matching_version import check_matching_version
+from ....util.check_matching_version import check_matching_version
 
 
 class Resolver:

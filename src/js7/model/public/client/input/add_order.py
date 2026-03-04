@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel
 
-from js7.model.public.client.common.schedule_time import ScheduleTime
+from .....model.public.client.common.schedule_time import ScheduleTime
 
 from ..enum.order_priority import OrderPriority
 

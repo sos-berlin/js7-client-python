@@ -1,8 +1,7 @@
 from typing import List, Optional
 
-from js7.model.public.client.common.schedule_time import ScheduleTime
-
 from ...context import Context
+from ....model.public.client.common.schedule_time import ScheduleTime
 from ....model.public.client.input.add_order import Order
 from ....model.public.client.common.audit_log import AuditLog
 from ....model.private.api.endpoint import EndpointCall

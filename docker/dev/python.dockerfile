@@ -5,4 +5,5 @@ RUN apt update && apt upgrade -y
 
 RUN pip install \
     --upgrade pip \
-    build
+    build \
+    twine
