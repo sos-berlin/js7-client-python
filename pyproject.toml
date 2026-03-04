@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "js7-client-python"
+authors = [
+  { name="Marcel Kerth" },
+]
+description = "Python client for the JS7 JOC REST API"
+version = "2.0.1"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = { file = "LICENSE" }
+dependencies = [
+    "pydantic>=2.10.6,<3.0.0",
+    "cryptography; platform_system != 'Windows' or platform_machine not in 'arm64,ARM64'"
+]
+
+[project.urls]
+GitHub = "https://github.com/sos-berlin/js7-client-python"
+Issues = "https://change.sos-berlin.com/browse/JOC-2175"
+
+[tool.setuptools]
+license-files = ["LICEN[CS]E*"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["js7*"]
+
+[tool.setuptools.package-data]
+js7 = ["java/**/*"]

@@ -1,0 +1,9 @@
+services:
+  js7-client-python-service:
+    container_name: js7-client-python
+    build:
+      context: .
+      dockerfile: python.dockerfile
+    volumes:
+      - ../../:/mnt/js7-client-python
+    command: ["sleep", "infinity"]

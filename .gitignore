@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Python.Dev
+__pycache__
+venv/
+
+# Python.Build
+dist/
+*.egg-info/
+
+# Project
+.vscode/
+certs/
+tmp/
+test/
