@@ -2,13 +2,12 @@ from typing import Optional
 from ....client.context import Context
 from ....model.public.client.common.audit_log import AuditLog
 
+from ...action.controller.cancel_controller_action import cancel_controller_action
 from ...action.controller.appoint_nodes_controller_action import appoint_controller_cluster_roles_action
 from ...action.controller.cancel_and_restart_controller_action import cancel_and_restart_controller_action
-from ...action.controller.cancel_controller_action import cancel_controller_action
 from ...action.controller.switchover_controller_cluster_action import switchover_controller_cluster_action
 from ...action.controller.restart_controller_action import restart_controller_action
 from ...action.controller.terminate_controller_action import terminate_controller_action
-from ...action.controller.unregister_controller_action import unregister_controller_action
 
 
 class Operate:
@@ -238,37 +237,5 @@ class Operate:
             audit_log=audit_log
         )
         
-    def unregister_controller(
-        self,
-        controller_id: str,
-        audit_log: Optional[AuditLog] = None
-    ) -> bool:
-        """
-        Unregisters a Controller instance.
-        
-        Args:
-            controller_id (str):
-                The ID of the controller on which the operation should be executed.
-            
-            audit_log (Optional[AuditLog]):
-                Creates an audit log entry for this operation.
-                
-        Returns:
-            bool: 
-                Returns `True` if the operation was successful, otherwise `False`.
-                
-        Raises:
-            ValueError:
-                If required arguments such as `controller_id` are missing or invalid.
 
-            RuntimeError:
-                If the server version is not compatible or if an
-                unexpected response is returned.
-        """
-        
-        return unregister_controller_action(
-            context=self._ctx,
-            controller_id=controller_id,
-            audit_log=audit_log
-        )
     

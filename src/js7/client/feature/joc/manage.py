@@ -2,10 +2,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from ....client.context import Context
 
+from ....model.public.client.common.audit_log import AuditLog
+
 from ...action.joc.get_license_info_action import get_license_info_action
 from ...action.joc.get_components_versions_action import get_components_versions_action
 from ...action.joc.get_version_action import get_version_action
 from ...action.joc.get_settings_action import get_settings_action
+from ...action.joc.store_settings_action import store_settings_action
 
 
 class Manage:    
@@ -100,3 +103,35 @@ class Manage:
         """
         
         return get_settings_action(context=self._ctx)
+
+    def store_settings(self, payload: Dict[str, Any], audit_log: Optional[AuditLog] = None) -> bool:
+        """
+        Store global JOC settings.
+
+        Args:
+            payload (Dict[str, Any]):
+                A dictionary representing the settings to be stored.
+
+            audit_log (Optional[AuditLog]):
+                Optional audit log information to create an audit entry
+                for this operation.
+
+        Returns:
+            bool:
+                Returns ``True`` if the settings were successfully stored,
+                otherwise ``False``.
+
+        Raises:
+            ValueError:
+                If required arguments are missing or invalid.
+
+            RuntimeError:
+                If the operation fails or the server version
+                is incompatible.
+        """
+        
+        return store_settings_action(
+            context=self._ctx,
+            payload=payload,
+            audit_log=audit_log
+        )

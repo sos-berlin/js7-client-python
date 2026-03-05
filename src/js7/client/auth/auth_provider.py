@@ -103,7 +103,6 @@ class AuthProvider:
             # Always clean up local state
             self._http_service.close()
             self._joc_version = None
-            self._logger = None 
             self._auth_cache = None
             self._access_token = None
             self._access_token_expires_at = 0.0

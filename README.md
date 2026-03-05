@@ -4,13 +4,13 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/js7-client-python)](https://pypi.org/project/js7-client-python/)
 
 The JS7 Python Client provides methods for accessing the JS7 JOC REST API.
-Its functionality is based on the JS7 UNIX CLI: [JS7 UNIX CLI](https://github.com/sos-berlin/js7-cli-unix)
+It offers functionality similar to the JS7 Unix CLI: [JS7 Unix CLI](https://github.com/sos-berlin/js7-cli-unix).
 
 ## Requirements
 
 - Python version 3.8 or later
-- A JS7 installation with version 2.6.5 to 2.8.3
-- A Java JVM version 17 or later for (en/de)cryption functionality
+- A JS7 installation with version 2.6.5–2.8.3
+- A Java JVM version 17 or later for encryption and decryption functionality
 
 ## Installation
 
@@ -20,7 +20,7 @@ pip install js7-client-python
 
 ## Quick Start
 
-The following example shows how to create a client instance and execute the first operation.
+The following example shows how to create a client instance and perform an operation.
 
 ### Client Initialization
 
@@ -31,8 +31,8 @@ import js7
 
 client = js7.Client(
     http_config=js7.model.HTTPConfiguration(
-        host="192.168.1.1",
-        port=4446
+        host="192.168.1.14",
+        port=4443
     ),
     auth_config=js7.model.AuthConfiguration(
         basic_auth=js7.model.BasicAuth(
@@ -45,32 +45,49 @@ client = js7.Client(
 
 #### SSL and Certificate-Based Authentication
 
->The code snippet shows authentication using Basic Auth.
->However, the JS7 Python Client also supports certificate-based authentication, provided that a corresponding identity provider and account exist in JS7 JOC.
->
->If an HTTPS certificate is required for a secure SSL connection, it can be specified in the `http_config`.
+The code snippet above shows authentication using Basic Auth.
+However, the JS7 Python Client also supports certificate-based authentication and client certificates for HTTPS connections.
 
-### Import Configurations
+```python
+client = js7.Client(
+    http_config=js7.model.HTTPConfiguration(
+        host="192.168.1.14",
+        port=4446,
+        ssl=True,
+        cafile_path="./certificate.crt"
+    ),
+    auth_config=js7.model.AuthConfiguration(
+        cert_auth=js7.model.CertAuth(
+            certfile_path="./client.crt",
+            keyfile_path="./client.key"
+        )
+    )
+)
+```
 
-A common use case is the import of inventory configurations into JS7 JOC.
+### Import Inventory Configurations
+
+A common use case is importing inventory configurations into JS7 JOC.
 We use the previously created client instance to import configurations.
 
 ```python
-client.inventory.manage.import_configurations(
+ok = client.inventory.manage.import_configurations(
     file_path="/path/to/file/or/folder",
     inventory_target_folder="/test-folder"
 )
+
+print(f"Operation successful: {ok}")
 ```
 
 ## Namespaces
 
-The Client class follows the domains of the JS7 JOC API, but groups its methods into three different namespaces:
+The Client class follows the domains of the JS7 JOC API, but groups its methods into three namespaces:
 
-- **Manage**: Used to manage existing configurations and resources or to import new ones.
-- **Operate**: Used to change the state of the system, for example to resume a workflow or cancel an order.
-- **Deploy**: Used to deploy configurations such as workflows.
+- **Manage**: Used to manage configurations and resources, such as importing, updating, or removing them.
+- **Operate**: Used to control runtime behavior, such as resuming a workflow or canceling an order.
+- **Deploy**: Used to deploy configurations, such as workflows.
 
-## Help
+## Resources
 
 - **Docs**: [JS7 Python Client](https://kb.sos-berlin.com/display/JS7/JS7+-+Python+Client)
 - **Issues**: [JOC-2175 - Python Client for JS7 REST API](https://change.sos-berlin.com/browse/JOC-2175)

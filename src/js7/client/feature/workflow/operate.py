@@ -3,7 +3,6 @@ from typing import List, Optional
 from ....client.context import Context
 from ....model.public.client.common.audit_log import AuditLog
 
-from ...action.workflow.set_workflow_version_as_current_action import set_workflow_version_as_current_action
 from ...action.workflow.resume_workflows_action import resume_workflows_action
 from ...action.workflow.skip_job_instructions_action import skip_job_instructions_action
 from ...action.workflow.stop_job_instructions_action import stop_job_instructions_action
@@ -15,51 +14,6 @@ from ...action.workflow.unstop_job_instructions_action import unstop_job_instruc
 class Operate:
     def __init__(self, context: Context):
         self._ctx = context
-        
-    def set_workflow_version_as_current(
-        self,
-        controller_id: str,
-        workflow_path: str,
-        workflow_version_id: str,
-        audit_log: Optional[AuditLog] = None
-    ) -> bool:
-        """
-        Sets a specific workflow version as the current version for all orders.
-
-        Args:
-            controller_id (str):
-                The ID of the controller on which the operation should be executed.
-
-            workflow_path (str):
-                The full path of the workflow whose version should be updated.
-
-            workflow_version_id (str):
-                The workflow `version_id` that should be set as the current version.
-
-            audit_log (Optional[AuditLog]):
-                Creates an audit log entry for this operation.
-
-        Returns:
-            bool:
-                Returns `True` if the operation was successful, otherwise `False`.
-
-        Raises:
-            ValueError:
-                If required arguments such as `controller_id`,
-                `workflow_path`, or `workflow_version_id` are missing or invalid.
-
-            RuntimeError:
-                If the server version is not compatible or if an
-                unexpected response is returned.
-        """
-        
-        return set_workflow_version_as_current_action(
-            context=self._ctx,
-            controller_id=controller_id,
-            workflow_path=workflow_path,
-            workflow_version_id=workflow_version_id,
-            audit_log=audit_log
-        )
         
     def resume_workflow(
         self,

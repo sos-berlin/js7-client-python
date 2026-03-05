@@ -8,6 +8,7 @@ from ...action.controller.confirm_cluster_node_loss_action import confirm_cluste
 from ...action.controller.get_controller_components_action import get_controller_components_action
 from ...action.controller.get_controller_status_action import get_controller_status_action
 from ...action.controller.register_controller_action import register_controller_action
+from ...action.controller.unregister_controller_action import unregister_controller_action
 
 
 class Manage:
@@ -211,4 +212,37 @@ class Manage:
             cluster_url=cluster_url,
             audit_log=audit_log
         )
+    
+    def unregister_controller(
+        self,
+        controller_id: str,
+        audit_log: Optional[AuditLog] = None
+    ) -> bool:
+        """
+        Unregisters a Controller instance.
         
+        Args:
+            controller_id (str):
+                The ID of the controller on which the operation should be executed.
+            
+            audit_log (Optional[AuditLog]):
+                Creates an audit log entry for this operation.
+                
+        Returns:
+            bool: 
+                Returns `True` if the operation was successful, otherwise `False`.
+                
+        Raises:
+            ValueError:
+                If required arguments such as `controller_id` are missing or invalid.
+
+            RuntimeError:
+                If the server version is not compatible or if an
+                unexpected response is returned.
+        """
+        
+        return unregister_controller_action(
+            context=self._ctx,
+            controller_id=controller_id,
+            audit_log=audit_log
+        )

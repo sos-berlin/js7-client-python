@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal, Optional
+from typing import Literal, Optional
 
 from ....client.context import Context
 from ....model.public.client.common.audit_log import AuditLog
@@ -7,7 +7,6 @@ from ...action.joc.switch_over_action import switch_over_action
 from ...action.joc.run_service_action import run_service_action
 from ...action.joc.restart_service_action import restart_service_action
 from ...action.joc.restart_proxies_action import restart_proxies_action
-from ...action.joc.store_settings_action import store_settings_action
 
 
 class Operate:
@@ -152,34 +151,3 @@ class Operate:
             audit_log=audit_log
         )
         
-    def store_settings(self, payload: Dict[str, Any], audit_log: Optional[AuditLog] = None) -> bool:
-        """
-        Store global JOC settings.
-
-        Args:
-            payload (Dict[str, Any]):
-                A dictionary representing the settings to be stored.
-
-            audit_log (Optional[AuditLog]):
-                Optional audit log information to create an audit entry
-                for this operation.
-
-        Returns:
-            bool:
-                Returns ``True`` if the settings were successfully stored,
-                otherwise ``False``.
-
-        Raises:
-            ValueError:
-                If required arguments are missing or invalid.
-
-            RuntimeError:
-                If the operation fails or the server version
-                is incompatible.
-        """
-        
-        return store_settings_action(
-            context=self._ctx,
-            payload=payload,
-            audit_log=audit_log
-        )

@@ -23,4 +23,3 @@ class Agent:
     def operate(self) -> Operate:
         return Operate(context=self._ctx)
     
-    
