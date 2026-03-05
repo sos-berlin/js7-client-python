@@ -39,3 +39,18 @@ client = js7.Client(
     )
 )
 ```
+
+## Get Access Token
+
+```python
+# The login method uses a stored session and reuses it if available.
+token = client.login()
+print(token)
+```
+
+## Logout
+
+```python
+# Logs the user out from the server and clears the local session.
+token = client.logout()
+```

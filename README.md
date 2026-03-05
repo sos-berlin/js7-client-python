@@ -22,6 +22,8 @@ pip install js7-client-python
 
 The following example shows how to create a client instance and perform an operation.
 
+**Note**: Additional examples showing how the client can be used can be found in the `./example` directory of this repository.
+
 ### Client Initialization
 
 Client initialization begins with configuring the JOC API endpoint and the user’s credentials.

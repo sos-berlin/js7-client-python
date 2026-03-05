@@ -9,7 +9,7 @@ authors = [
 ]
 description = "Python client for the JS7 JOC REST API"
 readme = "README.md"
-version = "2.0.1.0"
+version = "2.0.2"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -18,7 +18,7 @@ classifiers = [
 license = { file = "LICENSE" }
 dependencies = [
     "pydantic>=2.10.6,<3.0.0",
-    "cryptography; platform_system != 'Windows' or platform_machine not in 'arm64,ARM64'"
+    "cryptography"
 ]
 
 [project.urls]
