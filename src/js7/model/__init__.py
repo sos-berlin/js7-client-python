@@ -54,7 +54,8 @@ from .public.client.common import (
     SubagentCluster,
     Account,
     IdentityService,
-    Cycle
+    Cycle,
+    Controller
 )
 
 __all__ += [
@@ -72,7 +73,8 @@ __all__ += [
     "SubagentCluster",
     "Account",
     "IdentityService",
-    "Cycle"
+    "Cycle",
+    "Controller"
 ]
 
 from .public.client.enum import (

@@ -1,7 +1,8 @@
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, List, Optional
 
 from ....client.context import Context
 from ....model.public.client.common.audit_log import AuditLog
+from ....model.public.client.common.controller import Controller
 
 from ...action.controller.test_controller_instance_action import test_controller_instance_action
 from ...action.controller.confirm_cluster_node_loss_action import confirm_cluster_node_loss_action
@@ -69,8 +70,7 @@ class Manage:
 
         Returns:
             bool:
-                Returns `True` if the specified Controller node is confirmed as lost,
-                otherwise returns `False`.
+                Returns `True` if the operation was successful. Otherwise, an exception is raised.
 
         Raises:
             ValueError:
@@ -153,11 +153,8 @@ class Manage:
         
     def register_controller(
         self,
-        url: str,
-        role: Literal['STANDALONE', 'PRIMARY', 'BACKUP'],
+        controllers: List[Controller],
         controller_id: Optional[str] = None,
-        title: Optional[str] = None,
-        cluster_url: Optional[str] = None,
         audit_log: Optional[AuditLog] = None
     ) -> bool:
         """
@@ -169,30 +166,19 @@ class Manage:
         such as the URL or title.
 
         Args:
-            url (str):
-                The URL of the Controller instance.
-
-            role (Literal['STANDALONE', 'PRIMARY', 'BACKUP']):
-                The role of the Controller within the cluster.
-
             controller_id (Optional[str]):
                 The Controller ID. Can be omitted only when registering
                 a new Controller (cluster).
 
-            title (Optional[str]):
-                A display name used in JOC Cockpit.
-
-            cluster_url (Optional[str]):
-                For clustered Controllers only: The URL used by cluster
-                nodes to communicate with each other.
-
+            controllers (List[Controller]):
+                Controllers of a cluster or one standalone Controller.
+            
             audit_log (Optional[AuditLog]):
                 Optional audit log information to be included with the request.
 
         Returns:
             bool:
-                Returns `True` if the Controller was successfully registered
-                or updated.
+                Returns `True` if the operation was successful. Otherwise, an exception is raised.
 
         Raises:
             ValueError:
@@ -205,11 +191,8 @@ class Manage:
         
         return register_controller_action(
             context=self._ctx,
-            url=url,
-            role=role,
             controller_id=controller_id,
-            title=title,
-            cluster_url=cluster_url,
+            controllers=controllers,
             audit_log=audit_log
         )
     

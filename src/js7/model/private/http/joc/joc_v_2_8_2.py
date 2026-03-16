@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional, List, Union
 from typing_extensions import Self
-from pydantic import (field_serializer, model_validator, BaseModel as PydanticBaseModel)
+from pydantic import (Field, field_serializer, model_validator, BaseModel as PydanticBaseModel)
 from datetime import date, datetime
 from enum import Enum
  
@@ -2016,7 +2016,7 @@ class ComponentState(BaseModel):
 class ConnectionState(BaseModel):
     """com.sos.joc.model.controller.ConnectionState"""
     
-    text: Optional[ConnectionStateText] = None
+    text: Optional[ConnectionStateText] = Field(None, alias="_text")
     severity: Optional[int] = None
     """0=established, 1=unstable, 2=unreachable, 3=unknown"""
 

@@ -4,7 +4,8 @@ from ...context import Context
 from ....model.private.api.endpoint import EndpointCall
 from ....model.private.http.joc.joc_v_2_8_2 import (
     TestConnect as TestConnect_V_2_8_2,
-    JobScheduler200 as JobScheduler200_V_2_8_2
+    JobScheduler200 as JobScheduler200_V_2_8_2,
+    ConnectionStateText as ConnectionStateText_V_2_8_2
 )
 
 from ....util.check_matching_version import check_matching_version
@@ -34,14 +35,14 @@ def test_controller_instance_action(
     ))
 
     if isinstance(result, JobScheduler200_V_2_8_2):
-        if not (
+        if (
             result.controller
-            and result.controller.connection_state 
-            and result.controller.connection_state.severity != 0
+            and result.controller.connection_state
+            and result.controller.connection_state.text == ConnectionStateText_V_2_8_2.ESTABLISHED
         ):
-            return False
-        
-        return True
+            return True
+
+        return False
                 
     raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
 

@@ -7,6 +7,7 @@ from .store_agents import StoreClusterAgent, StoreSubagent, SubagentCluster, Sto
 from .accounts import Account
 from .identity_service import IdentityService
 from .cycle import Cycle
+from .controller import Controller
 
 __all__ = [
     "Configuration", 
@@ -23,5 +24,6 @@ __all__ = [
     "StoreAgent",
     "Account",
     "IdentityService",
-    "Cycle"
+    "Cycle",
+    "Controller"
 ]

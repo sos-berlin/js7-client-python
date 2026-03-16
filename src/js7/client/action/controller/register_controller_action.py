@@ -1,7 +1,8 @@
-from typing import Literal, Optional
+from typing import List, Optional
 
 from ...context import Context
 from ....model.public.client.common.audit_log import AuditLog
+from ....model.public.client.common.controller import Controller
 from ....model.private.api.endpoint import EndpointCall
 from ....model.private.http.joc.joc_v_2_8_2 import (
     AuditParams as AuditParams_V_2_8_2,
@@ -16,22 +17,16 @@ from ....util.check_matching_version import check_matching_version
 
 def register_controller_action(
     *, 
-    context: Context, 
+    context: Context,
     controller_id: Optional[str],
-    url: str,
-    cluster_url: Optional[str],
-    role: Literal["STANDALONE", "PRIMARY", "BACKUP"],
-    title: Optional[str],
+    controllers: List[Controller],
     audit_log: Optional[AuditLog]
 ) -> bool:
 
     if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
         request_data = _build_v_2_8_2_request(
             controller_id=controller_id,
-            url=url,
-            cluster_url=cluster_url,
-            role=role,
-            title=title,
+            controllers=controllers,
             audit_log=audit_log
         )
     else:
@@ -56,20 +51,16 @@ def register_controller_action(
 def _build_v_2_8_2_request(
     *, 
     controller_id: Optional[str],
-    url: str,
-    cluster_url: Optional[str],
-    role: Literal["STANDALONE", "PRIMARY", "BACKUP"],
-    title: Optional[str],
+    controllers: List[Controller],
     audit_log: Optional[AuditLog]
 ) -> RegisterParameters_V_2_8_2:
 
-    # Validate: url
-    if not url:
-        raise ValueError("'url' is required.")
-    
-    # Validate: role
-    if role not in ["STANDALONE", "PRIMARY", "BACKUP"]:
-        raise ValueError(f"Invalid 'role': {role}.")
+    # Validate: controllers
+    for c in controllers:
+        if not c.url:
+            raise ValueError("Each controller must define a 'url'.")
+        if c.role not in ["STANDALONE", "PRIMARY", "BACKUP"]:
+            raise ValueError(f"Invalid controller role '{c.role}'. Expected one of: STANDALONE, PRIMARY, BACKUP.")
     
     # Build: Audit Log
     res_audit_log = AuditParams_V_2_8_2(
@@ -83,11 +74,12 @@ def _build_v_2_8_2_request(
         controller_id=controller_id,
         controllers=[
             RegisterParameter_V_2_8_2(
-                url=url,
-                cluster_url=cluster_url,
-                role=ControllerRole_V_2_8_2(role), # Raises ValueError() if invalid.
-                title=title,
+                url=c.url,
+                cluster_url=c.cluster_url,
+                role=ControllerRole_V_2_8_2(c.role), # Raises ValueError() if invalid.
+                title=c.title,
             )
+            for c in controllers
         ],
         audit_log=res_audit_log
     )
