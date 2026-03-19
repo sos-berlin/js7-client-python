@@ -681,8 +681,8 @@ class ExportShallowCopy(BaseModel):
 class ExportFile(BaseModel):
     """com.sos.joc.model.publish.ExportFile"""
     
-    filename: str
-    format: Optional[ArchiveFormat] = ArchiveFormat.ZIP
+    filename: Optional[str] = None
+    format: Optional[ArchiveFormat] = None
 
 
 class AdminAccounts(BaseModel):
@@ -1164,7 +1164,14 @@ class RequestFolder(BaseModel):
     audit_log: Optional[AuditParams] = None
 
 
-class RestoreRequestFilter(BaseModel):
+class CommonRequestFilters(BaseModel):
+    """com.sos.joc.model.inventory.common.RequestFilters"""
+    
+    audit_log: Optional[AuditParams] = None
+    objects: Optional[List[CommonRequestFilter]] = None
+    
+
+class RestoreRequestFilter(CommonRequestFilters):
     """com.sos.joc.model.inventory.restore.RequestFilter"""
     
     # Target path / Renaming
@@ -1194,13 +1201,6 @@ class RestoreRequestFilter(BaseModel):
             raise ValueError("Either 'id' or both 'path' and 'object_type' are required")
 
         return self
-
-
-class CommonRequestFilters(BaseModel):
-    """com.sos.joc.model.inventory.common.RequestFilters"""
-    
-    audit_log: Optional[AuditParams] = None
-    objects: Optional[List[CommonRequestFilter]] = None
 
 
 class ResponseNewPath(BaseModel):

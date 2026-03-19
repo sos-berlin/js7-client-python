@@ -6,7 +6,7 @@ from ....model.private.api.endpoint import EndpointCall
 from ....model.public.client.common.configurations import Configuration
 from ....model.private.http.joc.joc_v_2_8_2 import (
     AuditParams as AuditParams_V_2_8_2,
-    RequestFilter as RequestFilter_V_2_8_2,
+    RestoreRequestFilter as RestoreRequestFilter_V_2_8_2,
     CommonConfigurationType as ConfigurationType_V_2_8_2,
     ResponseNewPath as ResponseNewPath_V_2_8_2
 )
@@ -60,7 +60,7 @@ def _build_v_2_8_2_request(
     add_prefix: Optional[str],
     add_suffix: Optional[str],
     audit_log: Optional[AuditLog]
-) -> RequestFilter_V_2_8_2:
+) -> RestoreRequestFilter_V_2_8_2:
 
     # Validate: new_path
     if not new_path:
@@ -74,7 +74,7 @@ def _build_v_2_8_2_request(
     ) if audit_log else None
 
     # Result
-    return RequestFilter_V_2_8_2(
+    return RestoreRequestFilter_V_2_8_2(
         path=configuration.path,
         object_type=ConfigurationType_V_2_8_2(configuration.object_type.value), # Raises ValueError() if invalid.
         new_path=new_path,

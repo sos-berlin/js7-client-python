@@ -140,9 +140,7 @@ class Manage:
         self,
         folder_path: str,
         filter_object_types: Optional[List[ReleaseObjectType]] = None,
-        filter_no_invalid_objects: bool = False,
-        recursive: bool = True,
-        audit_log: Optional[AuditLog] = None
+        recursive: bool = True
     ) -> bool:
         """
         Recall released configurations from a folder.
@@ -154,17 +152,9 @@ class Manage:
             filter_object_types (Optional[List[ReleaseObjectType]]):
                 Restricts the recall operation to specific object types.
 
-            filter_no_invalid_objects (bool):
-                If `True`, excludes invalid objects from the recall.
-                Defaults to `False`.
-
             recursive (bool):
                 If `True`, includes subfolders recursively.
                 Defaults to `True`.
-
-            audit_log (Optional[AuditLog]):
-                Optional audit log information to create an audit entry
-                for this operation.
 
         Returns:
             bool:
@@ -184,9 +174,7 @@ class Manage:
             context=self._ctx,
             folder_path=folder_path,
             filter_object_types=filter_object_types,
-            filter_no_invalid_objects=filter_no_invalid_objects,
-            recursive=recursive,
-            audit_log=audit_log
+            recursive=recursive
         )
     
     def release_configuartions(

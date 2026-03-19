@@ -19,8 +19,7 @@ def export(call: EndpointCall) -> bytes:
             path="/joc/api/agents/export",
             body=body,
             headers={
-                "X-Access-Token": call.access_token, 
-                "Accept": "application/octet-stream"
+                "X-Access-Token": call.access_token
             }
         )
         

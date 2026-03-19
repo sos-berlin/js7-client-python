@@ -32,8 +32,7 @@ class Manage:
         self,
         out_path: Union[Path, str],
         agent_ids: List[str],
-        archive_format: Literal['ZIP', 'TAR_GZ'] = "ZIP",
-        audit_log: Optional[AuditLog] = None
+        archive_format: Literal['ZIP', 'TAR_GZ'] = "ZIP"
     ) -> bool:
         """
         Export the specified agents to an archive file.
@@ -47,10 +46,6 @@ class Manage:
 
             archive_format (Literal["ZIP", "TAR_GZ"]):
                 The archive format to be created. Defaults to "ZIP".
-
-            audit_log (Optional[AuditLog]):
-                Optional audit log information to create an audit entry
-                for this operation.
 
         Returns:
             bool:
@@ -69,8 +64,7 @@ class Manage:
             context=self._ctx,
             out_path=out_path,
             archive_format=archive_format,
-            agent_ids=agent_ids,
-            audit_log=audit_log
+            agent_ids=agent_ids
         )
         
     def get_agents_status_info(
@@ -276,7 +270,7 @@ class Manage:
         file_path: Union[Path, str],
         archive_format: Literal["ZIP", "TAR_GZ"],
         overwrite: bool,
-        audit_log: Optional[AuditLog]
+        audit_log: Optional[AuditLog] = None
     ) -> bool:
         """
         Imports agent configurations.

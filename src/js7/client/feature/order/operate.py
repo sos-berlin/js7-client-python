@@ -24,6 +24,7 @@ class Operate:
         controller_id: str,
         order_ids: Optional[List[str]] = None,
         workflow_paths: Optional[List[str]] = None,
+        kill: bool = False,
         audit_log: Optional[AuditLog] = None
     ) -> bool:
         """
@@ -40,6 +41,9 @@ class Operate:
             workflow_paths (Optional[List[str]]):
                 A list of workflow paths whose orders
                 should be canceled.
+                
+            kill (bool):
+                If `True`, the order is terminated immediately instead of waiting for the task to complete.
 
             audit_log (Optional[AuditLog]):
                 Optional audit log information to create an audit entry
@@ -65,6 +69,7 @@ class Operate:
             controller_id=controller_id,
             order_ids=order_ids,
             workflow_paths=workflow_paths,
+            kill=kill,
             audit_log=audit_log
         )
         
@@ -145,8 +150,7 @@ class Operate:
 
         Returns:
             bool:
-                Returns `True` if the terminated orders were successfully removed,
-                otherwise `False`.
+                It returns an `True`. This reply code comes only for bulk operations if all commands were successful.
 
         Raises:
             ValueError:

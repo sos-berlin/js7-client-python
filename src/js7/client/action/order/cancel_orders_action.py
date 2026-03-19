@@ -18,7 +18,8 @@ def cancel_orders_action(
     context: Context, 
     controller_id: str, 
     order_ids: Optional[List[str]], 
-    workflow_paths: Optional[List[str]], 
+    workflow_paths: Optional[List[str]],
+    kill: bool,
     audit_log: Optional[AuditLog]
 ) -> bool:
 
@@ -27,7 +28,8 @@ def cancel_orders_action(
             controller_id=controller_id, 
             timezone=context.client_config.timezone,
             order_ids=order_ids, 
-            workflow_paths=workflow_paths, 
+            workflow_paths=workflow_paths,
+            kill=kill,
             audit_log=audit_log
         )
     else:
@@ -54,7 +56,8 @@ def _build_v_2_8_2_request(
     controller_id: str, 
     timezone: str,
     order_ids: Optional[List[str]], 
-    workflow_paths: Optional[List[str]], 
+    workflow_paths: Optional[List[str]],
+    kill: bool,
     audit_log: Optional[AuditLog]
 ) -> CancelOrders_V_2_8_2:
     
@@ -89,5 +92,6 @@ def _build_v_2_8_2_request(
         workflow_ids=res_workflow_ids,
         order_ids=order_ids,
         audit_log=res_audit_log,
+        kill=kill,
         time_zone=timezone
     )

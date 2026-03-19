@@ -5,6 +5,6 @@ from pydantic import BaseModel
 
 class Controller(BaseModel):
     url: str
-    cluster_url: Optional[str]
+    cluster_url: Optional[str] = None
     role: Literal["STANDALONE", "PRIMARY", "BACKUP"]
-    title: Optional[str]
+    title: Optional[str] = None

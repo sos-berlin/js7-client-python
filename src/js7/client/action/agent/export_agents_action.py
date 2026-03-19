@@ -1,11 +1,9 @@
 from pathlib import Path
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Union
 
 from ...context import Context
-from ....model.public.client.common.audit_log import AuditLog
 from ....model.private.api.endpoint import EndpointCall
 from ....model.private.http.joc.joc_v_2_8_2 import (
-    AuditParams as AuditParams_V_2_8_2,
     AgentExportFilter as AgentExportFilter_V_2_8_2,
     ExportFile as ExportFile_V_2_8_2,
     ArchiveFormat as ArchiveFormat_V_2_8_2
@@ -20,8 +18,7 @@ def export_agents_action(
     context: Context, 
     out_path: Union[Path, str],
     archive_format: Literal["ZIP", "TAR_GZ"],
-    agent_ids: List[str],
-    audit_log: Optional[AuditLog]
+    agent_ids: List[str]
 ) -> bool:
     
     # Normalize out_path
@@ -38,9 +35,9 @@ def export_agents_action(
         request_data = _build_v_2_8_2_request(
             out_path=out_path,
             archive_format=archive_format,
-            agent_ids=agent_ids,
-            audit_log=audit_log
+            agent_ids=agent_ids
         )
+        print(f'\n{request_data}\n')
     else:
         raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
     
@@ -53,7 +50,7 @@ def export_agents_action(
     ))
     
     if isinstance(result, bytes):
-        return bytes_to_file(data=result, out_path=Path(out_path))
+        return bytes_to_file(data=result, out_path=out_path)
     
     raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
 
@@ -64,8 +61,7 @@ def _build_v_2_8_2_request(
     *,
     out_path: Union[Path, str],
     archive_format: Literal["ZIP", "TAR_GZ"],
-    agent_ids: List[str],
-    audit_log: Optional[AuditLog]
+    agent_ids: List[str]
 ) -> AgentExportFilter_V_2_8_2:
     
     # Validate: out_path
@@ -85,17 +81,9 @@ def _build_v_2_8_2_request(
         filename=Path(out_path).name,
         format=(ArchiveFormat_V_2_8_2(archive_format)) # Raises ValueError() if invalid.
     )
-    
-    # Build: Audit Log
-    res_audit_log = AuditParams_V_2_8_2(
-        ticket_link=audit_log.ticket_link,
-        comment=audit_log.comment,
-        time_spent=audit_log.time_spent
-    ) if audit_log else None
 
     # Result
     return AgentExportFilter_V_2_8_2(
         agent_ids=agent_ids,
-        export_file=res_export_file,
-        audit_log=res_audit_log
+        export_file=res_export_file
     )
