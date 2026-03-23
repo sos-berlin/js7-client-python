@@ -2510,6 +2510,7 @@ class ModifyWorkflows(BaseModel):
     folders: Optional[List[Folder]] = None
     workflow_paths: Optional[List[str]] = None
     workflow_tags: Optional[List[str]] = None
+    workflow_id: Optional[WorkflowID] = None
     
     
 class ModifyWorkflowPositions(ModifyWorkflows):
@@ -2756,7 +2757,7 @@ class VersionResponse(BaseModel):
     agent_versions: Optional[List[AgentVersion]] = None
     controller_versions: Optional[List[ControllerVersion]] = None
     joc_version: Optional[str] = None
-    version: Any
+    version: Optional[str] = None
     
     
 class ControllerIdReq(BaseModel):

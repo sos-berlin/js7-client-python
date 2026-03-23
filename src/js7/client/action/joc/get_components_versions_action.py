@@ -47,7 +47,7 @@ def _build_v_2_8_2_request(
 ) -> VersionsFilter_V_2_8_2:
     
     # Validate: Any of controller_ids or agent_ids
-    if not (controller_ids and agent_ids):
+    if not (controller_ids or agent_ids):
         raise ValueError("At least one of 'controller_ids' or 'agent_ids' is required.")
     
     # Result

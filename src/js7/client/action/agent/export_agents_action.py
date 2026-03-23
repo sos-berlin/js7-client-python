@@ -37,7 +37,6 @@ def export_agents_action(
             archive_format=archive_format,
             agent_ids=agent_ids
         )
-        print(f'\n{request_data}\n')
     else:
         raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
     

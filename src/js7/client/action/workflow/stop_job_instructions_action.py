@@ -6,7 +6,8 @@ from ....model.private.api.endpoint import EndpointCall
 from ....model.private.http.joc.joc_v_2_8_2 import (
     OK as OK_V_2_8_2,
     AuditParams as AuditParams_V_2_8_2,
-    ModifyWorkflowPositions as ModifyWorkflowPositions_V_2_8_2
+    ModifyWorkflowPositions as ModifyWorkflowPositions_V_2_8_2,
+    WorkflowID as WorkflowID_V_2_8_2
 )
 
 from ....util.check_matching_version import check_matching_version
@@ -57,11 +58,11 @@ def _build_v_2_8_2_request(
 
     # Validate: controller_id
     if not controller_id:
-        raise ValueError("'controller_id' is required")
+        raise ValueError("'controller_id' is required.")
     
     # Validate: workflow_path
     if not workflow_path:
-        raise ValueError("'workflow_path' is required")
+        raise ValueError("'workflow_path' is required.")
     
     # Validate: labels
     if not labels:
@@ -77,7 +78,10 @@ def _build_v_2_8_2_request(
     # Result
     return ModifyWorkflowPositions_V_2_8_2(
         controller_id=controller_id,
-        workflow_paths=[workflow_path],
+        workflow_id=WorkflowID_V_2_8_2(
+            version_id=None,
+            path=workflow_path
+        ),
         positions=[label for label in labels], # Type checker trick.
         audit_log=res_audit_log
     )
