@@ -3435,7 +3435,7 @@ class GenerateRequest(BaseModel):
     daily_plan_date: Optional[datetime] = None
     """deprecated; use dailyPlanDates"""
 
-    daily_plan_dates: Optional[List[datetime]] = None
+    daily_plan_dates: Optional[List[date]] = None
     include_non_auto_planned_orders: Optional[bool] = None
     """includes non-automatically planned orders iff true"""
 

@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import List, Optional
 
 from ...context import Context
@@ -97,8 +97,7 @@ def _build_v_2_8_2_request(
     return GenerateRequest_V_2_8_2(
         controller_id=controller_id,
         daily_plan_dates=[
-            datetime.combine(d, datetime.min.time())
-            for d in daily_plan_dates
+            d for d in daily_plan_dates
         ],
         schedule_paths=PathItem_V_2_8_2(
             folders=[
