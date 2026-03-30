@@ -1478,9 +1478,9 @@ class Role(BaseModel):
     
     audit_log: Optional[AuditParams] = None
     controllers: Optional[List[str]] = None
-    identity_service_name: str
+    identity_service_name: Optional[str] = None
     ordering: Optional[int] = None
-    role_name: str
+    role_name: Optional[str] = None
     
     
 class RoleListFilter(BaseModel):
@@ -1492,7 +1492,7 @@ class RoleListFilter(BaseModel):
 class Roles(BaseModel):
     """com.sos.joc.model.security.roles.Roles"""
     
-    identity_service_name: str
+    identity_service_name: Optional[str] = None
     roles: Optional[List[Role]] = None
     
     
@@ -1753,14 +1753,20 @@ class CopyToFilter(BaseModel):
         if (self.local and self.rollout) or (not self.local and not self.rollout):
             raise ValueError("Exactly one of 'local' or 'rollout' must be set.")
         return self
+
+
+class PublishConfig(BaseModel):
+    """com.sos.joc.model.publish.Config"""
     
-    
+    configuration: Optional[PublishConfiguration] = None
+
+
 class DeleteFromFilter(BaseModel):
     """com.sos.joc.model.publish.repository.DeleteFromFilter"""
     
     audit_log: Optional[AuditParams] = None
     category: Category
-    configurations: List[PublishConfiguration]
+    configurations: List[PublishConfig]
     
 
 class CheckoutFilter(BaseModel):
@@ -1825,34 +1831,17 @@ class CommitFilter(BaseModel):
 class GitCredentials(BaseModel):
     """com.sos.joc.model.publish.git.GitCredentials"""
     
-    email: str
-    git_account: str
-    git_server: str
+    email: Optional[str] = None
+    git_account: Optional[str] = None
+    git_server: Optional[str] = None
     keyfile_path: Optional[str] = None
     """path or filename of a private Key. Empty filename possible."""
 
     password: Optional[str] = None
     personal_access_token: Optional[str] = None
-    username: str
+    username: Optional[str] = None
     
-    @model_validator(mode="after")
-    def validate_one_of(self):
-        # exactly one auth method
-        auth_methods = [
-            self.password,
-            self.personal_access_token,
-            self.keyfile_path,
-        ]
-        
-        if sum(value is not None for value in auth_methods) != 1:
-            raise ValueError(
-                "Exactly one authentication method must be provided: "
-                "password, personal_access_token, or keyfile_path."
-            )
 
-        return self
-    
-    
 class RemoveCredentialsFilter(BaseModel):
     """com.sos.joc.model.publish.git.RemoveCredentialsFilter"""
     

@@ -10,7 +10,8 @@ from ....model.private.http.joc.joc_v_2_8_2 import (
     CommonConfigurationType as ConfigurationType_V_2_8_2,
     DeleteFromFilter as DeleteFromFilter_V_2_8_2,
     Category as Category_V_2_8_2,
-    PublishConfiguration as Configuration_V_2_8_2,
+    PublishConfiguration as PublishConfiguration_V_2_8_2,
+    PublishConfig as PublishConfig_V_2_8_2
 )
 
 from ....util.check_matching_version import check_matching_version
@@ -61,8 +62,8 @@ def _build_v_2_8_2_request(
         raise ValueError("'category' must be one of 'LOCAL' or 'ROLLOUT'.")
     
     # Build: Configurations
-    res_configurations: List[Configuration_V_2_8_2] = [
-        Configuration_V_2_8_2(
+    res_configurations: List[PublishConfiguration_V_2_8_2] = [
+        PublishConfiguration_V_2_8_2(
             object_type=ConfigurationType_V_2_8_2(c.object_type.value), # Raises ValueError() if invalid.
             path=c.path,
         )
@@ -78,7 +79,10 @@ def _build_v_2_8_2_request(
 
     # Result
     return DeleteFromFilter_V_2_8_2(
-        configurations=res_configurations,
+        configurations=[
+            PublishConfig_V_2_8_2(configuration=c)
+            for c in res_configurations
+        ],
         category=Category_V_2_8_2(category), # Raises ValueError() if invalid.
         audit_log=res_audit_log,
     )

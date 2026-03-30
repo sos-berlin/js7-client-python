@@ -16,7 +16,7 @@ from ....util.check_matching_version import check_matching_version
 def run_service_action(
     *, 
     context: Context,
-    service_type: Literal["cleanup", "cluster", "dailyplan", "history", "lognotification", "monitor"],
+    service_type: Literal["cleanup", "dailyplan"],
     audit_log: Optional[AuditLog]
 ) -> bool:
 
@@ -49,12 +49,12 @@ def run_service_action(
 #---------------------#
 def _build_v_2_8_2_request(
     *, 
-    service_type: Literal["cleanup", "cluster", "dailyplan", "history", "lognotification", "monitor"], 
+    service_type: Literal["cleanup", "dailyplan"], 
     audit_log: Optional[AuditLog]
 ) -> ClusterServiceRun_V_2_8_2:
     
     # Validate: service_type
-    svc_types = ["cleanup", "cluster", "dailyplan", "history", "lognotification", "monitor"]
+    svc_types = ["cleanup", "dailyplan"]
     if not service_type:
         raise ValueError("'service_type' is required")
     if service_type not in svc_types:

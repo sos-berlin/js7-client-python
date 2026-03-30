@@ -9,7 +9,7 @@ from ....model.private.http.joc.joc_v_2_8_2 import (
     CommonRequestFilter as CommonRequestFilter_V_2_8_2,
     OK as OK_V_2_8_2,
     CommonConfigurationType as ConfigurationType_V_2_8_2,
-    RequestFilters as RequestFilters_V_2_8_2
+    CommonRequestFilters as CommonRequestFilters_V_2_8_2
 )
 
 from ....util.check_matching_version import check_matching_version
@@ -49,7 +49,7 @@ def _build_v_2_8_2_request(
     *, 
     configurations: List[Configuration],
     audit_log: Optional[AuditLog]
-) -> RequestFilters_V_2_8_2:
+) -> CommonRequestFilters_V_2_8_2:
     
     # Validate: configurations
     if not configurations:
@@ -72,9 +72,7 @@ def _build_v_2_8_2_request(
     ) if audit_log else None
     
     # Result
-    return RequestFilters_V_2_8_2(
+    return CommonRequestFilters_V_2_8_2(
         objects=res_objects,
-        audit_log=res_audit_log,
-        
-        cancel_orders_date_from=None, # Wrong domain
+        audit_log=res_audit_log
     )

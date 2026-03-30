@@ -40,7 +40,7 @@ class Operate:
     
     def run_service(
         self,
-        service_type: Literal["cleanup", "cluster", "dailyplan", "history", "lognotification", "monitor"],
+        service_type: Literal["cleanup", "dailyplan"],
         audit_log: Optional[AuditLog] = None
     ) -> bool:
         """
@@ -48,14 +48,10 @@ class Operate:
 
         Supported services include:
         - "cleanup"
-        - "cluster"
         - "dailyplan"
-        - "history"
-        - "lognotification"
-        - "monitor"
 
         Args:
-            service_type (Literal["cleanup", "cluster", "dailyplan", "history", "lognotification", "monitor"]):
+            service_type (Literal["cleanup", "dailyplan"]):
                 The type of service to be executed.
 
             audit_log (Optional[AuditLog]):

@@ -99,7 +99,7 @@ class HTTPService:
         
         self._last_used = time.monotonic()
 
-    def _request(self, method: str, path: str, headers: Dict[str, str], body: Optional[str]) -> http.client.HTTPResponse:
+    def _request(self, method: str, path: str, headers: Dict[str, str], body: Optional[str]) -> http.client.HTTPResponse:        
         self._ensure_connection()
         
         conn = self._conn

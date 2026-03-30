@@ -5,8 +5,8 @@ from ....model.public.client.common.audit_log import AuditLog
 from ....model.private.api.endpoint import EndpointCall
 from ....model.private.http.joc.joc_v_2_8_2 import (
     AccountFilter as AccountFilter_V_2_8_2,
-    Accounts as Accounts_V_2_8_2,
     AuditParams as AuditParams_V_2_8_2,
+    ConfigurationPermissions as ConfigurationPermissions_V_2_8_2
 )
 
 from ....util.check_matching_version import check_matching_version
@@ -37,7 +37,7 @@ def get_account_permissions_action(
         options=None,
     ))
     
-    if isinstance(result, Accounts_V_2_8_2):
+    if isinstance(result, ConfigurationPermissions_V_2_8_2):
         return result.model_dump(mode="json")
     
     raise RuntimeError(f"Unexpected response type: {type(result).__name__}")

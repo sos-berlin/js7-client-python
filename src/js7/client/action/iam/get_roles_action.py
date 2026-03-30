@@ -32,10 +32,13 @@ def get_roles_action(
     ))
     
     if isinstance(result, Roles_V_2_8_2):
-        return [
-            r.role_name
-            for r in result.roles
-        ] if result.roles else []
+        result_list: List[str] = []
+        if result.roles:
+            for r in result.roles:
+                if not r.role_name:
+                    continue
+                result_list.append(r.role_name)
+        return result_list
     
     raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
 

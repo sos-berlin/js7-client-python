@@ -15,7 +15,7 @@ def get_git_credentials_action(*, context: Context) -> GitCredentials:
         options=None,
     ))
     
-    if isinstance(result, GitCredentials_V_2_8_2):
+    if isinstance(result, GitCredentials_V_2_8_2):        
         return GitCredentials(
             email=result.email,
             git_account=result.git_account,
