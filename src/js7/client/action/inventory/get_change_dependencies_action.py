@@ -58,15 +58,18 @@ def _build_v_2_8_2_request(*, operation_type: OperationType, changes: List[Chang
     
     # Validate: changes
     for c in changes:
-        if not (c.name and c.object_type):
+        if not c.name or not c.object_type:
             raise ValueError("'name' and 'object_type' are required in every change.")
-    
+
+        # Validate: Object Types
+        if c.object_type in {"FOLDER", "JOBRESOURCE", "INCLUDESCRIPT", "REPORT", "DEPLOYMENTDESCRIPTOR", "DESCRIPTORFOLDER"}:
+            raise ValueError(f"Object type '{c.object_type.value}' is not supported for dependency resolution.")
+            
     return GetDependenciesRequest_V_2_8_2(
         operation_type=OperationType_V_2_8_2(operation_type.value), # Raises ValueError() if invalid.
         configurations=[
             RequestItem_V_2_8_2(name=c.name, type=c.object_type)
             for c in changes
-            if c.name and c.object_type # Process only valid changes
         ]
     )
 
@@ -137,7 +140,7 @@ def _build_v_2_8_2_response(
                 
                 if skip:
                     continue
-                
+            
             if in_references or in_referenced_by or in_enforced_references or in_enforced_referenced_by:
                 if not config.object_type:
                     raise RuntimeError("'object_type' is required in response.")
