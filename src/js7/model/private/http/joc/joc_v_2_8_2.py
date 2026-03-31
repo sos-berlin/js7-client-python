@@ -1826,9 +1826,9 @@ class CommitFilter(BaseModel):
     category: Category
     folder: str
     message: Optional[str] = None
-    
-    
-class GitCredentials(BaseModel):
+
+
+class GitCredential(BaseModel):
     """com.sos.joc.model.publish.git.GitCredentials"""
     
     email: Optional[str] = None
@@ -1840,7 +1840,11 @@ class GitCredentials(BaseModel):
     password: Optional[str] = None
     personal_access_token: Optional[str] = None
     username: Optional[str] = None
-    
+
+
+class GitCredentials(BaseModel):
+    credentials: Optional[List[GitCredential]] = None
+
 
 class RemoveCredentialsFilter(BaseModel):
     """com.sos.joc.model.publish.git.RemoveCredentialsFilter"""

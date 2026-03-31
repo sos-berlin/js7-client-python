@@ -26,12 +26,12 @@ class ManageRepository:
     def __init__(self, context: Context):
         self._ctx = context
 
-    def get_git_credentials(self) -> GitCredentials:
+    def get_git_credentials(self) -> List[GitCredentials]:
         """
-        Retrieve the stored Git credentials for the current JOC account.
+        Delivers git credentials for the current JOC account in dependence to the JOC Security Levels.
 
         Returns:
-            GitCredentials:
+            List[GitCredentials]:
                 The stored Git credentials.
 
         Raises:
