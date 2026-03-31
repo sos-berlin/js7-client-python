@@ -5,7 +5,7 @@ from ....model.private.http.joc.joc_v_2_8_2 import (
 )
 
 
-def create_projections_action(
+def recreate_projections_action(
     *,
     context: Context
 ) -> bool:

@@ -13,7 +13,7 @@ from ....model.public.client.filter.daily_plan_order_filters import (
 
 from ...action.daily_plan.get_orders_action import get_orders_action
 from ...action.daily_plan.copy_orders_action import copy_orders_action
-from ...action.daily_plan.create_projections_action import create_projections_action
+from ...action.daily_plan.recreate_projections_action import recreate_projections_action
 from ...action.daily_plan.get_calendar_projections_action import get_calendar_projections_action
 from ...action.daily_plan.get_projection_dates_action import get_projection_dates_action
 from ...action.daily_plan.modify_orders_action import modify_orders_action
@@ -115,13 +115,13 @@ class Manage:
             audit_log=audit_log
         )
         
-    def create_projections(self) -> bool:
+    def recreate_projections(self) -> bool:
         """
         (Re)creates daily plan projections.
 
         Returns:
             bool:
-                Returns True if the operation was successful.
+                Returns `True` if the operation was successful.
 
         Raises:
             RuntimeError:
@@ -129,7 +129,7 @@ class Manage:
                 response is returned.
         """
         
-        return create_projections_action(context=self._ctx)
+        return recreate_projections_action(context=self._ctx)
     
     def get_calendar_projections(self, filter: DailyPlanProjectionsFilter) -> Dict[str, Any]:
         """
