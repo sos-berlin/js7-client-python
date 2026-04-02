@@ -19,7 +19,7 @@ def import_configurations_action(
     file_path: Union[Path, str],
     archive_format: Literal["ZIP", "TAR_GZ"],
     overwrite: bool,
-    target_folder: Optional[str],
+    inventory_target_folder: Optional[str],
     suffix: Optional[str],
     prefix: Optional[str],
     overwrite_tags: bool,
@@ -31,7 +31,7 @@ def import_configurations_action(
             file_path=Path(file_path),
             archive_format=archive_format,
             overwrite=overwrite,
-            target_folder=target_folder,
+            inventory_target_folder=inventory_target_folder,
             suffix=suffix,
             prefix=prefix,
             overwrite_tags=overwrite_tags,
@@ -62,7 +62,7 @@ def _build_v_2_8_2_request(
     file_path: Path,
     archive_format: Literal["ZIP", "TAR_GZ"],
     overwrite: bool,
-    target_folder: Optional[str],
+    inventory_target_folder: Optional[str],
     suffix: Optional[str],
     prefix: Optional[str],
     overwrite_tags: bool,
@@ -76,6 +76,10 @@ def _build_v_2_8_2_request(
     # Validate: archive_format
     if archive_format not in ("ZIP", "TAR_GZ"):
         raise ValueError("'archive_format' must be 'ZIP' or 'TAR_GZ'.")
+    
+    # Validate: inventory_target_folder
+    if inventory_target_folder and not inventory_target_folder.startswith("/"):
+        inventory_target_folder = "/" + inventory_target_folder
     
     # Build: files_as_bytes
     files_as_bytes = files_to_bytes(
@@ -96,7 +100,9 @@ def _build_v_2_8_2_request(
         # Skips invalid filenames
         if path.rsplit("/", 1)[-1].startswith((".", "_", "-")):
             continue
-                
+        
+        path = "/" + path
+          
         archive_type = detect_archive_type(file)
         
         if not archive_type and path.endswith(".json"):
@@ -110,13 +116,13 @@ def _build_v_2_8_2_request(
             if not arch_files:
                 continue
             
+            # Removes the archive name from path
+            path = "/".join(path.split("/")[:-1])
+            
             for arch_path, arch_file in arch_files:
                 # Skips invalid filenames
                 if arch_path.rsplit("/", 1)[-1].startswith((".", "_", "-")):
                     continue
-                
-                # Removes archive suffix
-                path = path.split(".")[0]
                 
                 new_path = path + "/" + arch_path
                 files.append((new_path, arch_file))
@@ -131,12 +137,12 @@ def _build_v_2_8_2_request(
         "overwrite_tags": overwrite_tags    
     }
     
-    if target_folder:
-        res_options["target_folder"] = target_folder
+    if inventory_target_folder:
+        res_options["target_folder"] = inventory_target_folder
     
     if suffix:
         res_options["suffix"] = suffix
-        
+    
     if prefix:
         res_options["prefix"] = prefix
     

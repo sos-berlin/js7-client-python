@@ -1,4 +1,4 @@
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple
 
 from ...context import Context
 from ....model.public.client.common.changes import Change, ChangeDependencies, ChangeStatus
@@ -20,7 +20,7 @@ def get_change_dependencies_action(
     *,
     context: Context,
     operation_type: OperationType,
-    changes: List[Change],
+    changes: List[Tuple[str, ObjectType]],
     filter_paths: Optional[List[str]],
     filter_no_references: bool,
     filter_no_referencing: bool
@@ -51,25 +51,25 @@ def get_change_dependencies_action(
 #---------------------#
 # Build 2.8.2 request #
 #---------------------#
-def _build_v_2_8_2_request(*, operation_type: OperationType, changes: List[Change]) -> GetDependenciesRequest_V_2_8_2:    
+def _build_v_2_8_2_request(*, operation_type: OperationType, changes: List[Tuple[str, ObjectType]]) -> GetDependenciesRequest_V_2_8_2:    
     # Validate: changes
     if not changes:
         raise ValueError("At least one change in 'changes' is required.")
     
     # Validate: changes
-    for c in changes:
-        if not c.name or not c.object_type:
+    for name, object_type in changes:
+        if not name or not object_type:
             raise ValueError("'name' and 'object_type' are required in every change.")
 
         # Validate: Object Types
-        if c.object_type in {"FOLDER", "JOBRESOURCE", "INCLUDESCRIPT", "REPORT", "DEPLOYMENTDESCRIPTOR", "DESCRIPTORFOLDER"}:
-            raise ValueError(f"Object type '{c.object_type.value}' is not supported for dependency resolution.")
+        if object_type in {"FOLDER", "JOBRESOURCE", "INCLUDESCRIPT", "REPORT", "DEPLOYMENTDESCRIPTOR", "DESCRIPTORFOLDER"}:
+            raise ValueError(f"Object type '{object_type.value}' is not supported for dependency resolution.")
             
     return GetDependenciesRequest_V_2_8_2(
         operation_type=OperationType_V_2_8_2(operation_type.value), # Raises ValueError() if invalid.
         configurations=[
-            RequestItem_V_2_8_2(name=c.name, type=c.object_type)
-            for c in changes
+            RequestItem_V_2_8_2(name=name, type=object_type.value)
+            for name, object_type in changes
         ]
     )
 

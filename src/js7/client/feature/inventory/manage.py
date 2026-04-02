@@ -1,6 +1,6 @@
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from .manage_repository import ManageRepository
 
@@ -568,7 +568,7 @@ class Manage:
     def get_change_dependencies(
         self,
         operation_type: OperationType,
-        changes: List[Change],
+        changes: List[Tuple[str, ObjectType]],
         filter_paths: Optional[List[str]] = None,
         filter_no_references: bool = False,
         filter_no_referencing: bool = False
@@ -582,8 +582,9 @@ class Manage:
                 The operation context (e.g. DEPLOY, EXPORT)
                 that defines how dependencies are evaluated.
 
-            changes (List[Change]):
-                The changes for which dependencies should be resolved.
+            changes (List[Tuple[str, ObjectType]]):
+                List of changes in the format (Configuration name e.g. my-workflow, Object type e.g. 'WORKFLOW')
+                for which dependencies should be resolved.
 
             filter_paths (Optional[List[str]]):
                 If provided, only dependencies whose path starts
@@ -691,14 +692,14 @@ class Manage:
         file_path: Union[Path, str],
         archive_format: Literal["ZIP", "TAR_GZ"] = "ZIP",
         overwrite: bool = False,
-        inventory_target_folder: Optional[str] = None,
+        inventory_target_folder: Optional[str] = "/",
         add_suffix: Optional[str] = None,
         add_prefix: Optional[str] = None,
         overwrite_tags: bool = False,
         audit_log: Optional[AuditLog] = None
     ) -> bool:
         """
-        Import inventory configurations into JS7 JOC.
+        Imports inventory configurations into JS7 JOC.
 
         Supported inputs:
         - ZIP or TAR.GZ archives ('.zip', '.tar.gz', '.tgz').
@@ -762,7 +763,7 @@ class Manage:
             file_path=file_path,
             archive_format=archive_format,
             overwrite=overwrite,
-            target_folder=inventory_target_folder,
+            inventory_target_folder=inventory_target_folder,
             suffix=add_suffix,
             prefix=add_prefix,
             overwrite_tags=overwrite_tags,

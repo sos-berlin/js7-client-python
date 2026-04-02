@@ -127,27 +127,29 @@ def _build_v_2_8_2_request(
         # Skips invalid filenames
         if path.rsplit("/", 1)[-1].startswith((".", "_", "-")):
             continue
-                
+        
+        path = "/" + path
+        
         archive_type = detect_archive_type(file)
         
         if not archive_type and path.endswith(".json"):
             files.append((path, file))
         else:
             arch_files = read_bytes_archive_files_to_bytes(
-                file=file, 
+                file=file,
                 filter_suffixes=[".json"]
             )
             
             if not arch_files:
                 continue
             
+            # Removes the archive name from path
+            path = "/".join(path.split("/")[:-1])
+
             for arch_path, arch_file in arch_files:
                 # Skips invalid filenames
                 if arch_path.rsplit("/", 1)[-1].startswith((".", "_", "-")):
                     continue
-                
-                # Removes archive suffix
-                path = path.split(".")[0]
                 
                 new_path = path + "/" + arch_path
                 files.append((new_path, arch_file))
