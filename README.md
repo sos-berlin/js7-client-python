@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/js7-client-python.svg)](https://pypi.org/project/js7-client-python/)
 [![Python versions](https://img.shields.io/pypi/pyversions/js7-client-python)](https://pypi.org/project/js7-client-python/)
 
-The JS7 Python Client provides methods for accessing the JS7 JOC REST API.
+The JS7 Python Client provides methods for accessing the JS7 JOC Cockpit REST API.
 It offers functionality similar to the JS7 Unix CLI: [JS7 Unix CLI](https://github.com/sos-berlin/js7-cli-unix).
 
 ## Requirements
@@ -26,7 +26,7 @@ The following example shows how to create a client instance and perform an opera
 
 ### Client Initialization
 
-Client initialization begins with configuring the JOC API endpoint and the user’s credentials.
+Client initialization begins with configuring the JOC Cockpit API endpoint and the user’s credentials.
 
 ```python
 import js7
@@ -69,7 +69,7 @@ client = js7.Client(
 
 ### Import Inventory Configurations
 
-A common use case is importing inventory configurations into JS7 JOC.
+A common use case is importing inventory configurations into JS7 JOC Cockpit.
 We use the previously created client instance to import configurations.
 
 ```python
@@ -83,7 +83,7 @@ print(f"Operation successful: {ok}")
 
 ## Namespaces
 
-The Client class follows the domains of the JS7 JOC API, but groups its methods into three namespaces:
+The Client class follows the domains of the JS7 JOC Cockpit REST API, but groups its methods into three namespaces:
 
 - **Manage**: Used to manage configurations and resources, such as importing, updating, or removing them.
 - **Operate**: Used to control runtime behavior, such as resuming a workflow or canceling an order.
@@ -91,5 +91,5 @@ The Client class follows the domains of the JS7 JOC API, but groups its methods 
 
 ## Resources
 
-- **Docs**: [JS7 Python Client](https://kb.sos-berlin.com/display/JS7/JS7+-+Python+Client)
-- **Issues**: [JOC-2175 - Python Client for JS7 REST API](https://change.sos-berlin.com/browse/JOC-2175)
+- **Docs**: [JS7 - Python Client](https://kb.sos-berlin.com/display/JS7/JS7+-+Python+Client)
+- **Issues**: [JS-2240 - Offer Python Client for JS7 REST API](https://change.sos-berlin.com/browse/JOC-2175)

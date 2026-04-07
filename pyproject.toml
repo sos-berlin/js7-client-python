@@ -7,9 +7,9 @@ name = "js7-client-python"
 authors = [
   { name="Marcel Kerth" },
 ]
-description = "Python client for the JS7 JOC REST API"
+description = "Python Client for the JOC Cockpit REST API"
 readme = "README.md"
-version = "2.0.9"
+version = "2.0.11"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
