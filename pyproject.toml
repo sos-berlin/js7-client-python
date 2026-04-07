@@ -9,7 +9,7 @@ authors = [
 ]
 description = "Python client for the JS7 JOC REST API"
 readme = "README.md"
-version = "2.0.8"
+version = "2.0.9"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
