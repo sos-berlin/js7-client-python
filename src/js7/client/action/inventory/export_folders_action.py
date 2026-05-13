@@ -5,18 +5,17 @@ from ...context import Context
 from ....model.public.client.common.audit_log import AuditLog
 from ....model.public.client.enum.object_types import DeployObjectType, ReleaseObjectType
 from ....model.public.client.filter.export_folders_filter import ExportFoldersFilter
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    ArchiveFormat as ArchiveFormat_V_2_8_2,
-    CommonConfigurationType as ConfigurationType_V_2_8_2,
-    ExportFile as ExportFile_V_2_8_2,
-    ExportFolderFilter as ExportFolderFilter_V_2_8_2,
-    ExportFolderForSigning as ExportFolderForSigning_V_2_8_2,
-    ShallowCopy as ShallowCopy_V_2_8_2,
-    AuditParams as AuditParams_V_2_8_2
+from ....api.joc.http.v_2_6_5.inventory.export.folder import folder, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    ArchiveFormat as ArchiveFormat_V_2_6_5,
+    CommonConfigurationType as ConfigurationType_V_2_6_5,
+    ExportFile as ExportFile_V_2_6_5,
+    ExportFolderFilter as ExportFolderFilter_V_2_6_5,
+    ExportFolderForSigning as ExportFolderForSigning_V_2_6_5,
+    ShallowCopy as ShallowCopy_V_2_6_5,
+    AuditParams as AuditParams_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def export_folders_action(
@@ -30,18 +29,19 @@ def export_folders_action(
     audit_log: Optional[AuditLog]
 ) -> bool:
 
-    # Normalize out_path
-    out_dir = Path(out_dir)
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        # Normalize out_path
+        out_dir = Path(out_dir)
 
-    # Determine expected suffix from archive_format
-    expected_suffix = ".tar.gz" if archive_format == "TAR_GZ" else ".zip"
-    
-    # Append suffix if missing or wrong
-    if not filename.endswith((".zip", ".tar.gz")):
-        filename = filename + expected_suffix
-    
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(
+        # Determine expected suffix from archive_format
+        expected_suffix = ".tar.gz" if archive_format == "TAR_GZ" else ".zip"
+        
+        # Append suffix if missing or wrong
+        if not filename.endswith((".zip", ".tar.gz")):
+            filename = filename + expected_suffix
+        
+        
+        request_data = _build_v_2_6_5_request(
             controller_id=controller_id,
             out_dir=out_dir,
             filename=filename,
@@ -49,35 +49,28 @@ def export_folders_action(
             filter=filter,
             audit_log=audit_log
         )
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
-    
-    result = context.joc_api.dispatch(endpoint_id="inventory/export/folder", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None,
-    ))
-    
-    if isinstance(result, bytes):    
+
+        result = folder(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         out_dir.mkdir(parents=True, exist_ok=True)
         out_file = out_dir / filename
         out_file.write_bytes(result)
         return out_file.exists()
-        
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     controller_id: str,
     out_dir: Path,
     filename: str,
     archive_format: Literal["ZIP", "TAR_GZ"],
     filter: ExportFoldersFilter,
     audit_log: Optional[AuditLog]
-) -> ExportFolderFilter_V_2_8_2:
+) -> ExportFolderFilter_V_2_6_5:
 
     # Validate: controller_id
     if not controller_id:
@@ -100,28 +93,28 @@ def _build_v_2_8_2_request(
         raise ValueError("At least one folder path in 'folder_paths' is required")
     
     # Build: object_types - Default: All object types.
-    res_object_types: List[ConfigurationType_V_2_8_2] = []
+    res_object_types: List[ConfigurationType_V_2_6_5] = []
     if filter.object_types:
         for obj_type in filter.object_types:
-            res_object_types.append(ConfigurationType_V_2_8_2(obj_type.value)) # Raises ValueError() if invalid
+            res_object_types.append(ConfigurationType_V_2_6_5(obj_type.value)) # Raises ValueError() if invalid
     elif filter.for_signing:
         for obj_type in DeployObjectType:
-            res_object_types.append(ConfigurationType_V_2_8_2(obj_type.value)) # Raises ValueError() if invalid
+            res_object_types.append(ConfigurationType_V_2_6_5(obj_type.value)) # Raises ValueError() if invalid
     else:
         for obj_type in ReleaseObjectType:
-            res_object_types.append(ConfigurationType_V_2_8_2(obj_type.value)) # Raises ValueError() if invalid
+            res_object_types.append(ConfigurationType_V_2_6_5(obj_type.value)) # Raises ValueError() if invalid
             
         for obj_type in DeployObjectType:
             try:
                 ReleaseObjectType(obj_type.value)  # exists -> skip
             except ValueError:
-                res_object_types.append(ConfigurationType_V_2_8_2(obj_type.value)) # Raises ValueError() if invalid
+                res_object_types.append(ConfigurationType_V_2_6_5(obj_type.value)) # Raises ValueError() if invalid
     
     # Build: for_signing_result and shallow_copy_result
-    for_signing_result: Optional[ExportFolderForSigning_V_2_8_2] = None
-    shallow_copy_result: Optional[ShallowCopy_V_2_8_2] = None
+    for_signing_result: Optional[ExportFolderForSigning_V_2_6_5] = None
+    shallow_copy_result: Optional[ShallowCopy_V_2_6_5] = None
     if filter.for_signing is True:    
-        for_signing_result = ExportFolderForSigning_V_2_8_2(
+        for_signing_result = ExportFolderForSigning_V_2_6_5(
             controller_id=controller_id,
             folders=filter.folder_paths,
             object_types=res_object_types,
@@ -130,7 +123,7 @@ def _build_v_2_8_2_request(
             without_drafts=filter.no_draft,
         )
     else:
-        shallow_copy_result = ShallowCopy_V_2_8_2(
+        shallow_copy_result = ShallowCopy_V_2_6_5(
             folders=filter.folder_paths,
             object_types=res_object_types,
             incl_all_tags=True,
@@ -142,16 +135,16 @@ def _build_v_2_8_2_request(
         )
         
     # Build: audit_log
-    res_audit_log = AuditParams_V_2_8_2(
+    res_audit_log = AuditParams_V_2_6_5(
         ticket_link=audit_log.ticket_link,
         comment=audit_log.comment,
         time_spent=audit_log.time_spent
     ) if audit_log else None
     
-    return ExportFolderFilter_V_2_8_2(
-        export_file=ExportFile_V_2_8_2(
+    return ExportFolderFilter_V_2_6_5(
+        export_file=ExportFile_V_2_6_5(
             filename=filename,
-            format=ArchiveFormat_V_2_8_2(archive_format)
+            format=ArchiveFormat_V_2_6_5(archive_format)
         ),
         for_signing=for_signing_result,
         shallow_copy=shallow_copy_result,

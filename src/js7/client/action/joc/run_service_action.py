@@ -1,16 +1,14 @@
 from typing import Literal, Optional
 
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
+from ....api.joc.http.v_2_6_5.joc.cluster.run import run, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
 from ....model.public.client.common.audit_log import AuditLog
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    AuditParams as AuditParams_V_2_8_2,
-    ClusterServices as ClusterServices_V_2_8_2,
-    ClusterResponse as ClusterResponse_V_2_8_2,
-    ClusterServiceRun as ClusterServiceRun_V_2_8_2
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    AuditParams as AuditParams_V_2_6_5,
+    ClusterServices as ClusterServices_V_2_6_5,
+    ClusterServiceRun as ClusterServiceRun_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def run_service_action(
@@ -20,20 +18,18 @@ def run_service_action(
     audit_log: Optional[AuditLog]
 ) -> bool:
 
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(service_type=service_type, audit_log=audit_log)
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
-    
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="joc/cluster/run", call=EndpointCall(
-        http_service=context.http_service,
-        payload=request_data,
-        access_token=context.auth_provider.login(),
-        options=None
-    ))
-    
-    if isinstance(result, ClusterResponse_V_2_8_2):
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
+            service_type=service_type, 
+            audit_log=audit_log
+        )
+
+        result = run(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         if not result.state:
             return False
         
@@ -42,16 +38,13 @@ def run_service_action(
         
         return True
     
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *, 
     service_type: Literal["cleanup", "dailyplan"], 
     audit_log: Optional[AuditLog]
-) -> ClusterServiceRun_V_2_8_2:
+) -> ClusterServiceRun_V_2_6_5:
     
     # Validate: service_type
     svc_types = ["cleanup", "dailyplan"]
@@ -61,14 +54,14 @@ def _build_v_2_8_2_request(
         raise ValueError(f"Unsupported 'service_type': {service_type}. Supported values are: {svc_types}")
     
     # Build: audit_log 
-    res_audit_log = AuditParams_V_2_8_2(
+    res_audit_log = AuditParams_V_2_6_5(
         ticket_link=audit_log.ticket_link,
         comment=audit_log.comment,
         time_spent=audit_log.time_spent
     ) if audit_log else None
     
     # Result
-    return ClusterServiceRun_V_2_8_2(
-        type=ClusterServices_V_2_8_2(service_type), # Raises ValueError if invalid.
+    return ClusterServiceRun_V_2_6_5(
+        type=ClusterServices_V_2_6_5(service_type), # Raises ValueError if invalid.
         audit_log=res_audit_log
     )

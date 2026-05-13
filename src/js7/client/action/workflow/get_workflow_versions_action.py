@@ -2,17 +2,16 @@ from typing import Dict
 from pathlib import PurePosixPath
 
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    WorkflowID as WorkflowID_V_2_8_2,
-    WorkflowFilter as WorkflowFilter_V_2_8_2,
-    Workflow as Workflow_V_2_8_2,
-    WorkflowsFilter as WorkflowsFilter_V_2_8_2,
-    Workflows as Workflows_V_2_8_2,
-    Folder as Folder_V_2_8_2
+from ....api.joc.http.v_2_6_5.workflow.workflow import workflow, EndpointCall as WorkflowEndpointCall
+from ....api.joc.http.v_2_6_5.workflows.workflows import workflows, EndpointCall as WorkflowsEndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    WorkflowID as WorkflowID_V_2_6_5,
+    WorkflowFilter as WorkflowFilter_V_2_6_5,
+    WorkflowsFilter as WorkflowsFilter_V_2_6_5,
+    Workflows as Workflows_V_2_6_5,
+    Folder as Folder_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 # Returns: { Version ID: Path }
@@ -24,30 +23,27 @@ def get_workflow_versions_action(
     exclude_current_version: bool,
 ) -> Dict[str, str]:
 
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        result = _build_v_2_8_2_request(
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        result = _build_v_2_6_5_request(
             ctx=context, 
             controller_id=controller_id, 
             workflow_path=workflow_path
         )
         
-        return _build_v_2_8_2_response(
+        return _build_v_2_6_5_response(
             response=result, 
             exclude_current_version=exclude_current_version,
             filter_workflow_path=workflow_path
         )
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
+    
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *,
     ctx: Context,
     controller_id: str,
     workflow_path: str,
-) -> Workflows_V_2_8_2:
+) -> Workflows_V_2_6_5:
 
     # Validate: controller_id
     if not controller_id:
@@ -57,54 +53,42 @@ def _build_v_2_8_2_request(
     if not workflow_path:
         raise ValueError("'workflow_path' is required.")
     
-    # Request: /workflow
-    res_workflow = ctx.joc_api.dispatch(endpoint_id="workflow", call=EndpointCall(
+    res_workflow = workflow(WorkflowEndpointCall(
         http_service=ctx.http_service,
         access_token=ctx.auth_provider.login(),
-        payload=WorkflowFilter_V_2_8_2(
+        payload=WorkflowFilter_V_2_6_5(
             controller_id=controller_id,
-            workflow_id=WorkflowID_V_2_8_2(
+            workflow_id=WorkflowID_V_2_6_5(
                 path=workflow_path,
                 version_id=None
             ),
             compact=False
-        ),
-        options=None,
+        )
     ))
-    
-    if not isinstance(res_workflow, Workflow_V_2_8_2):
-        raise RuntimeError(f"Unexpected response type: {type(res_workflow).__name__}")
     
     # Request: /workflows
     if not (res_workflow.workflow and res_workflow.workflow.path):
         raise ValueError("'workflow.path' missing in response.")
     
-    res_workflows = ctx.joc_api.dispatch(endpoint_id="workflows", call=EndpointCall(
+    res_workflows = workflows(WorkflowsEndpointCall(
         http_service=ctx.http_service,
         access_token=ctx.auth_provider.login(),
-        payload=WorkflowsFilter_V_2_8_2(
+        payload=WorkflowsFilter_V_2_6_5(
             controller_id=controller_id,
-            folders=[Folder_V_2_8_2(
+            folders=[Folder_V_2_6_5(
                 folder=str(PurePosixPath(res_workflow.workflow.path).parent),
                 recursive=False
             )],
             compact=False,
             
-        ),
-        options=None,
+        )
     ))
-    
-    if not isinstance(res_workflows, Workflows_V_2_8_2):
-        raise RuntimeError(f"Unexpected response type: {type(res_workflow).__name__}")
     
     return res_workflows
 
-#----------------------#
-# Build 2.8.2 response #
-#----------------------#
-def _build_v_2_8_2_response(
+def _build_v_2_6_5_response(
     *,
-    response: Workflows_V_2_8_2,
+    response: Workflows_V_2_6_5,
     exclude_current_version: bool,
     filter_workflow_path: str
 ) -> Dict[str, str]:

@@ -2,17 +2,15 @@ from typing import List, Optional
 
 from ....model.public.client.common.audit_log import AuditLog
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
+from ....api.joc.http.v_2_6_5.inventory.remove.remove import remove, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
 from ....model.public.client.common.configurations import Configuration
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    AuditParams as AuditParams_V_2_8_2,
-    CommonConfigurationType as ConfigurationType_V_2_8_2,
-    RequestFilters as RequestFilters_V_2_8_2,
-    OK as OK_V_2_8_2,
-    CommonRequestFilter as CommonRequestFilter_V_2_8_2,
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    AuditParams as AuditParams_V_2_6_5,
+    CommonConfigurationType as ConfigurationType_V_2_6_5,
+    RequestFilters as RequestFilters_V_2_6_5,
+    CommonRequestFilter as CommonRequestFilter_V_2_6_5,
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def remove_configurations_action(
@@ -22,32 +20,27 @@ def remove_configurations_action(
     audit_log: Optional[AuditLog]
 ) -> bool:
     
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(configurations=configurations, audit_log=audit_log) 
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
+            configurations=configurations, 
+            audit_log=audit_log
+        )
 
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="inventory/remove", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None,
-    ))
-    
-    if isinstance(result, OK_V_2_8_2):
+        result = remove(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return bool(result.ok)
     
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *, 
     configurations: List[Configuration],
     audit_log: Optional[AuditLog]
-) -> RequestFilters_V_2_8_2:
+) -> RequestFilters_V_2_6_5:
 
     # Validate: configurations
     if not configurations:
@@ -55,21 +48,21 @@ def _build_v_2_8_2_request(
     
     # Build: res_object
     res_object = [
-        CommonRequestFilter_V_2_8_2(
+        CommonRequestFilter_V_2_6_5(
             path=c.path,
-            object_type=ConfigurationType_V_2_8_2(c.object_type.value) # Raises ValueError() if invalid.
+            object_type=ConfigurationType_V_2_6_5(c.object_type.value) # Raises ValueError() if invalid.
         )
         for c in configurations
     ]
     
     # Build: Audit log
-    res_audit_log = AuditParams_V_2_8_2(
+    res_audit_log = AuditParams_V_2_6_5(
         ticket_link=audit_log.ticket_link,
         comment=audit_log.comment,
         time_spent=audit_log.time_spent
     ) if audit_log else None
     
-    return RequestFilters_V_2_8_2(
+    return RequestFilters_V_2_6_5(
         objects=res_object,
         audit_log=res_audit_log,
         

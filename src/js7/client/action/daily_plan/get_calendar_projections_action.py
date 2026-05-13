@@ -1,15 +1,13 @@
 from typing import Any, Dict
 
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
+from ....api.joc.http.v_2_6_5.daily_plan.projections.calendar import calendar, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
 from ....model.public.client.filter.daily_plan_order_filters import DailyPlanProjectionsFilter
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    Folder as Folder_V_2_8_2,
-    ProjectionsRequest as ProjectionsRequest_V_2_8_2,
-    ProjectionsCalendarResponse as ProjectionsCalendarResponse_V_2_8_2
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    Folder as Folder_V_2_6_5,
+    ProjectionsRequest as ProjectionsRequest_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def get_calendar_projections_action(
@@ -18,40 +16,32 @@ def get_calendar_projections_action(
     filter: DailyPlanProjectionsFilter
 ) -> Dict[str, Any]:
     
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(filter)
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(filter)
 
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="daily_plan/projections/calendar", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None
-    ))
-
-    if isinstance(result, ProjectionsCalendarResponse_V_2_8_2):
+        result = calendar(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return result.model_dump(mode="json").get("years") or {}
+    
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
-
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(filter: DailyPlanProjectionsFilter) -> ProjectionsRequest_V_2_8_2:    
+def _build_v_2_6_5_request(filter: DailyPlanProjectionsFilter) -> ProjectionsRequest_V_2_6_5:    
     # Result
-    return ProjectionsRequest_V_2_8_2(
+    return ProjectionsRequest_V_2_6_5(
         date_from=filter.date_from,
         date_to=filter.date_to,
         schedule_paths=filter.schedule_paths,
         schedule_folders=[
-            Folder_V_2_8_2(folder=f.folder_path, recursive=f.recursive)
+            Folder_V_2_6_5(folder=f.folder_path, recursive=f.recursive)
             for f in filter.schedule_folders
         ] if filter.schedule_folders else None,
         workflow_paths=filter.workflow_paths,
         workflow_folders=[
-            Folder_V_2_8_2(folder=f.folder_path, recursive=f.recursive)
+            Folder_V_2_6_5(folder=f.folder_path, recursive=f.recursive)
             for f in filter.workflow_folders
         ] if filter.workflow_folders else None,
         without_start_time=filter.without_start_time,

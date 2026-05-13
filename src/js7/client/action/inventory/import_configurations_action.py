@@ -1,15 +1,14 @@
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import List, Literal, Optional, Tuple, Union
 
 from ...client import Context
 from ....model.public.client.common.audit_log import AuditLog
-from ....model.private.http.joc.joc_v_2_8_2 import OK as OK_V_2_8_2
-from ....model.private.api.endpoint import EndpointCall
+from ....api.joc.http.v_2_6_5.inventory.import_objects import import_objects, EndpointCall, Options
+from ....util.version_to_tuple import version_to_tuple
 
 from ....util.bytes_converter.bytes_to_archive_bytes import bytes_to_archive_bytes
 from ....util.bytes_converter.read_bytes_archive_files_to_bytes import read_bytes_archive_files_to_bytes
 from ....util.bytes_converter.files_to_bytes import files_to_bytes
-from ....util.check_matching_version import check_matching_version
 from ....util.detect_archive_type import detect_archive_type
 
 
@@ -26,8 +25,8 @@ def import_configurations_action(
     audit_log: Optional[AuditLog]
 ) -> bool:
     
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        options, archive = _build_v_2_8_2_request(
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        options, archive = _build_v_2_6_5_request(
             file_path=Path(file_path),
             archive_format=archive_format,
             overwrite=overwrite,
@@ -37,27 +36,19 @@ def import_configurations_action(
             overwrite_tags=overwrite_tags,
             audit_log=audit_log
         )
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
-    
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="inventory/import", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=archive,
-        options=options
-    ))
-    
-    if isinstance(result, OK_V_2_8_2):
+
+        result = import_objects(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=archive,
+            options=options
+        ))
+        
         return bool(result.ok)
     
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------------------------#
-# Build 2.8.2 request                   #
-# Returns: [Formdata, List of archives] #
-#---------------------------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *,
     file_path: Path,
     archive_format: Literal["ZIP", "TAR_GZ"],
@@ -67,7 +58,7 @@ def _build_v_2_8_2_request(
     prefix: Optional[str],
     overwrite_tags: bool,
     audit_log: Optional[AuditLog]
-) -> Tuple[Dict[str, Any], bytes]:
+) -> Tuple[Options, bytes]:
     
     # Validate: file_path
     if not file_path.exists():
@@ -131,10 +122,16 @@ def _build_v_2_8_2_request(
     res_archive = bytes_to_archive_bytes(archive_format=archive_format, files=files)
     
     # Build: options
-    res_options: Dict[str, Any] = {
+    res_options: Options = {
         "format": archive_format,
         "overwrite": overwrite,
-        "overwrite_tags": overwrite_tags    
+        "overwrite_tags": overwrite_tags,
+        "audit_log_comment": None,
+        "audit_log_ticket_link": None,
+        "audit_log_time_spent": None,
+        "prefix": None,
+        "suffix": None,
+        "target_folder": None
     }
     
     if inventory_target_folder:
@@ -153,7 +150,7 @@ def _build_v_2_8_2_request(
         if audit_log.comment:
             res_options["audit_log_comment"] = audit_log.comment
         if audit_log.time_spent:
-            res_options["audit_log_time_spent"] = audit_log.time_spent
+            res_options["audit_log_time_spent"] = str(audit_log.time_spent)
     
     # Result
     return res_options, res_archive

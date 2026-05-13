@@ -3,13 +3,9 @@ from pathlib import Path
 from typing import Any, Dict, Union
 
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
+from ....api.joc.http.v_2_6_5.inventory.validate import validate, EndpointCall, Options
+from ....util.version_to_tuple import version_to_tuple
 from ....model.public.client.enum.object_types import ObjectType
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    Validate as Validate_V_2_8_2
-)
-
-from ....util.check_matching_version import check_matching_version
 
 
 def validate_configuration_action(
@@ -19,20 +15,16 @@ def validate_configuration_action(
     file: Union[Path, str, Dict[str, Any]]
 ) -> bool:
     
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(file)
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(file)
         
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="inventory/validate", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options={ "object_type": object_type },
-    ))
-    
-    if isinstance(result, Validate_V_2_8_2):
+        result = validate(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+            options=Options(object_type=object_type)
+        ))
+        
         if result.valid is True:
             return True
 
@@ -41,12 +33,9 @@ def validate_configuration_action(
         
         return False
     
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(file: Union[Path, str, Dict[str, Any]]) -> Dict[str, Any]:
+def _build_v_2_6_5_request(file: Union[Path, str, Dict[str, Any]]) -> Dict[str, Any]:
     if isinstance(file, Path):
         with open(file, encoding="utf-8") as f:
             return json.load(f)

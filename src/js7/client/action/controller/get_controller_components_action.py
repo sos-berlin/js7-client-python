@@ -1,41 +1,29 @@
 from typing import Any, Dict
 
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    ControllerIdReq as ControllerIdReq_V_2_8_2,
-    Components as Components_V_2_8_2,
-)
-
-from ....util.check_matching_version import check_matching_version
+from ....api.joc.http.v_2_6_5.controller.components import components, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import ControllerIdReq as ControllerIdReq_V_2_6_5
 
 
 def get_controller_components_action(*, context: Context, controller_id: str) -> Dict[str, Any]:
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(controller_id)
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
-    
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="controller/components", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None,
-    ))
-    
-    if isinstance(result, Components_V_2_8_2):
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(controller_id)
+
+        result = components(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return result.model_dump(mode="json")
     
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(controller_id: str) -> ControllerIdReq_V_2_8_2:
+def _build_v_2_6_5_request(controller_id: str) -> ControllerIdReq_V_2_6_5:
     # Validates controller id
     if not controller_id:
         raise ValueError("'controller_id' is required.")
     
     # Result
-    return ControllerIdReq_V_2_8_2(controller_id=controller_id)
+    return ControllerIdReq_V_2_6_5(controller_id=controller_id)

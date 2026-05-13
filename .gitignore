@@ -4,6 +4,8 @@
 # Python.Dev
 __pycache__
 venv/
+.venv/
+uv.lock
 
 # Python.Build
 dist/

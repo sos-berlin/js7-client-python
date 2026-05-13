@@ -1,16 +1,14 @@
 from typing import Any, Dict
 
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
+from ....api.joc.http.v_2_6_5.daily_plan.orders.orders import orders, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
 from ....model.public.client.filter.daily_plan_order_filters import DailyPlanOrdersFilter
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    DailyPlanOrdersFilter as DailyPlanOrdersFilter_V_2_8_2,
-    PlannedOrders as PlannedOrders_V_2_8_2,
-    DailyPlanOrderStateText as DailyPlanOrderStateText_V_2_8_2,
-    Folder as Folder_V_2_8_2
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    DailyPlanOrdersFilter as DailyPlanOrdersFilter_V_2_6_5,
+    DailyPlanOrderStateText as DailyPlanOrderStateText_V_2_6_5,
+    Folder as Folder_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def get_orders_action(
@@ -19,30 +17,22 @@ def get_orders_action(
     filter: DailyPlanOrdersFilter,
 ) -> Dict[str, Any]:
     
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(filter)
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(filter)
 
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="daily_plan/orders", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None
-    ))
-
-    if isinstance(result, PlannedOrders_V_2_8_2):
+        result = orders(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return result.model_dump(mode="json")
+    
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
-
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(filter: DailyPlanOrdersFilter) -> DailyPlanOrdersFilter_V_2_8_2:    
+def _build_v_2_6_5_request(filter: DailyPlanOrdersFilter) -> DailyPlanOrdersFilter_V_2_6_5:    
     # Result
-    return DailyPlanOrdersFilter_V_2_8_2(
+    return DailyPlanOrdersFilter_V_2_6_5(
         daily_plan_date_from=filter.date_from,
         daily_plan_date_to=filter.date_to,
         controller_ids=filter.controller_ids,
@@ -54,17 +44,17 @@ def _build_v_2_8_2_request(filter: DailyPlanOrdersFilter) -> DailyPlanOrdersFilt
         schedule_paths=filter.schedule_paths,
         
         states=[
-            DailyPlanOrderStateText_V_2_8_2(s) # Returns ValueError() if invalid.
+            DailyPlanOrderStateText_V_2_6_5(s) # Returns ValueError() if invalid.
             for s in filter.states
         ] if filter.states else None,
         
         schedule_folders=[
-            Folder_V_2_8_2(folder=f.folder_path, recursive=f.recursive)
+            Folder_V_2_6_5(folder=f.folder_path, recursive=f.recursive)
             for f in filter.schedule_folders
         ] if filter.schedule_folders else None,
         
         workflow_folders=[
-            Folder_V_2_8_2(folder=f.folder_path, recursive=f.recursive)
+            Folder_V_2_6_5(folder=f.folder_path, recursive=f.recursive)
             for f in filter.workflow_folders
         ] if filter.workflow_folders else None
     )

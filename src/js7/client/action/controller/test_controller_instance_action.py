@@ -1,14 +1,12 @@
 from typing import Optional
 
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    TestConnect as TestConnect_V_2_8_2,
-    JobScheduler200 as JobScheduler200_V_2_8_2,
-    ConnectionStateText as ConnectionStateText_V_2_8_2
+from ....api.joc.http.v_2_6_5.controller.test import test, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    TestConnect as TestConnect_V_2_6_5,
+    ConnectionStateText as ConnectionStateText_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def test_controller_instance_action(
@@ -18,49 +16,41 @@ def test_controller_instance_action(
     url: str
 ) -> bool:
 
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
             controller_id=controller_id,
             url=url
         )
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
 
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="controller/test", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None,
-    ))
-
-    if isinstance(result, JobScheduler200_V_2_8_2):
+        result = test(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         if (
             result.controller
             and result.controller.connection_state
-            and result.controller.connection_state.text == ConnectionStateText_V_2_8_2.ESTABLISHED
+            and result.controller.connection_state.text == ConnectionStateText_V_2_6_5.ESTABLISHED
         ):
             return True
 
         return False
-                
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *, 
     controller_id: Optional[str], 
     url: str
-) -> TestConnect_V_2_8_2:
+) -> TestConnect_V_2_6_5:
 
     # Validates controller id
     if not url:
         raise ValueError("'url' is required.")
 
     # Result
-    return TestConnect_V_2_8_2(
+    return TestConnect_V_2_6_5(
         controller_id=controller_id,
         url=url
     )

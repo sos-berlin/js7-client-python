@@ -2,34 +2,31 @@ from typing import List
 
 from ...context import Context
 from ....model.public.client.common.schedule_time import ScheduleTime
-from ....model.private.api.endpoint import EndpointCall
+from ....api.joc.http.v_2_6_5.orders.orders import orders, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
 from ....model.public.client.filter.get_order_filter import GetOrderFilter
 from ....model.public.client.input.add_order import Order, PlanID
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    OrdersFilterV as OrdersFilterV_V_2_8_2,
-    OrderStateText as OrderStateText_V_2_8_2,
-    OrdersV as OrdersV_V_2_8_2
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    OrdersFilterV as OrdersFilterV_V_2_6_5,
+    OrderStateText as OrderStateText_V_2_6_5
 )
 
-from ....util.check_matching_version import check_matching_version
 from ....util.str_converter.order_id_to_order_name import order_id_to_order_name
 
 
 def get_orders_action(*, context: Context, controller_id: str, filter: GetOrderFilter) -> List[Order]:
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(controller_id=controller_id, filter=filter)
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
-    
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="orders", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None,
-    ))
-    
-    if isinstance(result, OrdersV_V_2_8_2):
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
+            controller_id=controller_id, 
+            filter=filter
+        )
+
+        result = orders(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return [
             Order(
                 arguments=o.arguments,
@@ -51,24 +48,21 @@ def get_orders_action(*, context: Context, controller_id: str, filter: GetOrderF
             for o in result.orders
         ] if result.orders else []
     
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(*, controller_id: str, filter: GetOrderFilter) -> OrdersFilterV_V_2_8_2:
+def _build_v_2_6_5_request(*, controller_id: str, filter: GetOrderFilter) -> OrdersFilterV_V_2_6_5:
     # Validates controller_id
     if not controller_id:
         raise ValueError("'controller_id' is required.")
     
     # Build: States
     res_states = [
-        OrderStateText_V_2_8_2(state) # Raises ValueError() if invalid.
+        OrderStateText_V_2_6_5(state) # Raises ValueError() if invalid.
         for state in filter.states
     ] if filter.states else None
     
     # Result
-    return OrdersFilterV_V_2_8_2(
+    return OrdersFilterV_V_2_6_5(
         controller_id=controller_id,
         compact=filter.compact,
         limit=filter.limit,

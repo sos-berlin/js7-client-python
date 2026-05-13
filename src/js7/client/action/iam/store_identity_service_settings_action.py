@@ -2,14 +2,12 @@ import json
 from typing import Any, Dict, Literal
 
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    Configuration as Configuration_V_2_8_2,
-    ConfigurationType as ConfigurationType_V_2_8_2,
-    ConfigurationOk as ConfigurationOk_V_2_8_2
+from ....api.joc.http.v_2_6_5.configuration.save import save, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    Configuration as Configuration_V_2_6_5,
+    ConfigurationType as ConfigurationType_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def store_identity_service_settings_action(
@@ -20,37 +18,29 @@ def store_identity_service_settings_action(
     settings: Dict[str, Any]
 ) -> bool:
 
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
             identity_service_name=identity_service_name,
             identity_service_type=identity_service_type,
             settings=settings
         )
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
-    
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="configuration/save", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None,
-    ))
-    
-    if isinstance(result, ConfigurationOk_V_2_8_2):
+
+        result = save(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return bool(result.id)
     
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *,
     identity_service_name: str,
     identity_service_type: Literal["KEYCLOAK", "KEYCLOAK-JOC", "LDAP", "LDAP-JOC", "OIDC", "OIDC-JOC", "FIDO", "JOC", "CERTIFICATE"],
     settings: Dict[str, Any]
-) -> Configuration_V_2_8_2:
+) -> Configuration_V_2_6_5:
     
     # Validate: identity_service_name
     if not identity_service_name:
@@ -65,10 +55,10 @@ def _build_v_2_8_2_request(
         raise ValueError("'settings' is required.")
     
     # Result
-    return Configuration_V_2_8_2(
+    return Configuration_V_2_6_5(
         id=0,
         name=identity_service_name,
         object_type=identity_service_type,
-        configuration_type=ConfigurationType_V_2_8_2.IAM,
+        configuration_type=ConfigurationType_V_2_6_5.IAM,
         configuration_item=json.dumps(settings),
     )

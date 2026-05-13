@@ -3,15 +3,16 @@ from ..model.configuration.http_configuration import HTTPConfiguration
 from ..model.configuration.client_configuration import ClientConfiguration
 from .auth.auth_provider import AuthProvider
 from ..service.http_service import HTTPService
-from ..api.joc.interface.interface import Interface as JOCInterface
 
 from ..validator.http.joc_http_status_validator import joc_http_status_validator
 
 
 class Context:
     def __init__(self, *, http_config: HTTPConfiguration, auth_config: AuthConfiguration, client_config: ClientConfiguration):
+        # Sets default version
+        self.version = "2.6.5"
+        
         # Initializes the joc api interface with auto discovery
-        self.joc_api = JOCInterface(version=None)
         self.client_config = client_config
              
         self.http_service = HTTPService(
@@ -34,7 +35,3 @@ class Context:
         from .action.joc.get_version_action import get_version_action
         joc_version = get_version_action(context=self)
         self.version = joc_version
-        
-        # Disables auto discovery with version parameter
-        self.joc_api.set_version(self.version)
-        

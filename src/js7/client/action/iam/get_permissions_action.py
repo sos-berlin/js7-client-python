@@ -1,15 +1,15 @@
 from typing import List, Optional, Tuple, Union
 
 from ...context import Context
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    PermissionListFilter as PermissionListFilter_V_2_8_2,
-    Permissions as Permissions_V_2_8_2,
-    PermissionItem as PermissionItem_V_2_8_2,
-    PermissionFilter as PermissionFilter_V_2_8_2
+from ....api.joc.http.v_2_6_5.iam.permissions.permissions import permissions, EndpointCall as PermissionsEndpointCall
+from ....api.joc.http.v_2_6_5.iam.permission.permission import permission, EndpointCall as PermissionEndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    PermissionListFilter as PermissionListFilter_V_2_6_5,
+    Permissions as Permissions_V_2_6_5,
+    PermissionItem as PermissionItem_V_2_6_5,
+    PermissionFilter as PermissionFilter_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def get_permissions_action(
@@ -22,8 +22,8 @@ def get_permissions_action(
     without_excluded: bool
 ) -> List[Tuple[str, bool]]:
 
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        result = _build_v_2_8_2_request(
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        result = _build_v_2_6_5_request(
             context=context,
             permission_path=permission_path,
             identity_service_name=identity_service_name,
@@ -33,7 +33,7 @@ def get_permissions_action(
         
         permissions: List[Tuple[str, bool]] = []
         
-        if isinstance(result, Permissions_V_2_8_2):    
+        if isinstance(result, Permissions_V_2_6_5):    
             for p in result.permissions:
                 if p.excluded is True and without_excluded:
                     continue
@@ -47,20 +47,17 @@ def get_permissions_action(
                 permissions.append((result.permission.permission_path, result.permission.excluded or False))
             
         return permissions
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
+    
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *,
     context: Context,
     permission_path: Optional[str],
     identity_service_name: str,
     role_name: str,
     controller_id: Optional[str]
-) -> Union[PermissionItem_V_2_8_2, Permissions_V_2_8_2]:
+) -> Union[PermissionItem_V_2_6_5, Permissions_V_2_6_5]:
 
     # Validate: identity_service_name
     if not identity_service_name:
@@ -72,42 +69,32 @@ def _build_v_2_8_2_request(
     
     if not permission_path:
         # Build: permissions_req
-        permissions_req = PermissionListFilter_V_2_8_2(
+        permissions_req = PermissionListFilter_V_2_6_5(
             identity_service_name=identity_service_name,
             role_name=role_name,
             controller_id=controller_id
         )
         
-        # Calls the dispatcher for the matching JOC version
-        permissions_res = context.joc_api.dispatch(endpoint_id="iam/permissions", call=EndpointCall(
+        permissions_res = permissions(PermissionsEndpointCall(
             http_service=context.http_service,
             access_token=context.auth_provider.login(),
-            payload=permissions_req,
-            options=None,
+            payload=permissions_req
         ))
-        
-        if not isinstance(permissions_res, Permissions_V_2_8_2):
-            raise RuntimeError(f"Unexpected response type: {type(permissions_res).__name__}")
         
         return permissions_res
     
     # Build: permission_req
-    permission_req = PermissionFilter_V_2_8_2(
+    permission_req = PermissionFilter_V_2_6_5(
         identity_service_name=identity_service_name,
         role_name=role_name,
         controller_id=controller_id,
         permission_path=permission_path
     )
     
-    # Calls the dispatcher for the matching JOC version
-    permission_res = context.joc_api.dispatch(endpoint_id="iam/permission", call=EndpointCall(
+    permission_res = permission(PermissionEndpointCall(
         http_service=context.http_service,
         access_token=context.auth_provider.login(),
-        payload=permission_req,
-        options=None,
+        payload=permission_req
     ))
-    
-    if not isinstance(permission_res, PermissionItem_V_2_8_2):
-        raise RuntimeError(f"Unexpected response type: {type(permission_res).__name__}")
     
     return permission_res

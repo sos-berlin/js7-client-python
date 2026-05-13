@@ -4,15 +4,13 @@ from ...context import Context
 from ....model.public.client.common.cycle import Cycle
 from ....model.public.client.common.audit_log import AuditLog
 from ....model.public.client.common.schedule_time import ScheduleTime
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    Cycle as Cycle_V_2_8_2,
-    AuditParams as AuditParams_V_2_8_2,
-    OrderIDMap200 as OrderIDMap200_V_2_8_2,
-    DailyPlanModifyOrder as DailyPlanModifyOrder_V_2_8_2
+from ....api.joc.http.v_2_6_5.daily_plan.orders.modify import modify, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    Cycle as Cycle_V_2_6_5,
+    AuditParams as AuditParams_V_2_6_5,
+    DailyPlanModifyOrder as DailyPlanModifyOrder_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def modify_orders_action(
@@ -32,8 +30,8 @@ def modify_orders_action(
     audit_log: Optional[AuditLog]
 ) -> List[Tuple[str, str]]:
     
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
             timezone=context.client_config.timezone,
             controller_id=controller_id,
             order_ids=order_ids,
@@ -48,29 +46,21 @@ def modify_orders_action(
             block_position_label=block_position_label,
             audit_log=audit_log
         )
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
 
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="daily_plan/orders/modify", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None
-    ))
-
-    if isinstance(result, OrderIDMap200_V_2_8_2):
+        result = modify(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return [
             (old_id, new_id)
             for old_id, new_id in result.order_ids
         ] if result.order_ids else []
+    
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
-
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *, 
     timezone: str,
     controller_id: str,
@@ -85,7 +75,7 @@ def _build_v_2_8_2_request(
     end_position_labels: Optional[List[str]],
     block_position_label: Optional[str],
     audit_log: Optional[AuditLog]
-) -> DailyPlanModifyOrder_V_2_8_2:    
+) -> DailyPlanModifyOrder_V_2_6_5:    
     
     # Validate: timezone
     if not timezone:
@@ -100,19 +90,19 @@ def _build_v_2_8_2_request(
         raise ValueError("At least one order id in 'order_ids' is required.")
     
     # Build: audit_log 
-    res_audit_log = AuditParams_V_2_8_2(
+    res_audit_log = AuditParams_V_2_6_5(
         ticket_link=audit_log.ticket_link,
         comment=audit_log.comment,
         time_spent=audit_log.time_spent
     ) if audit_log else None
     
     # Result
-    return DailyPlanModifyOrder_V_2_8_2(
+    return DailyPlanModifyOrder_V_2_6_5(
         time_zone=timezone,
         controller_id=controller_id,
         order_ids=order_ids,
         scheduled_for=scheduled_for.value if scheduled_for else None,
-        cycle=Cycle_V_2_8_2(
+        cycle=Cycle_V_2_6_5(
             begin=str(cycle.begin),
             end=str(cycle.end),
             repeat=str(cycle.repeat)

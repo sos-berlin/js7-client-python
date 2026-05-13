@@ -4,17 +4,15 @@ from typing import List, Optional
 from ...context import Context
 from ....model.public.client.common.audit_log import AuditLog
 from ....model.public.client.filter.element.folder import Folder
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    Folder as Folder_V_2_8_2,
-    GenerateRequest as GenerateRequest_V_2_8_2,
-    PathItem as PathItem_V_2_8_2,
-    Folder as Folder_V_2_8_2,
-    AuditParams as AuditParams_V_2_8_2,
-    OK as OK_V_2_8_2
+from ....api.joc.http.v_2_6_5.daily_plan.orders.generate import generate, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    Folder as Folder_V_2_6_5,
+    GenerateRequest as GenerateRequest_V_2_6_5,
+    PathItem as PathItem_V_2_6_5,
+    Folder as Folder_V_2_6_5,
+    AuditParams as AuditParams_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def generate_orders_action(
@@ -32,8 +30,8 @@ def generate_orders_action(
     audit_log: Optional[AuditLog]
 ) -> bool:
     
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
             controller_id=controller_id,
             daily_plan_dates=daily_plan_dates,
             schedule_folder_paths=schedule_folder_paths,
@@ -45,26 +43,18 @@ def generate_orders_action(
             include_non_auto_planned_orders=include_non_auto_planned_orders,
             audit_log=audit_log
         )
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
 
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="daily_plan/orders/generate", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None
-    ))
-
-    if isinstance(result, OK_V_2_8_2):
+        result = generate(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return bool(result.ok)
+    
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
-
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *,
     controller_id: str,
     daily_plan_dates: List[date],
@@ -76,7 +66,7 @@ def _build_v_2_8_2_request(
     with_submit: bool,
     include_non_auto_planned_orders: bool,
     audit_log: Optional[AuditLog]
-) -> GenerateRequest_V_2_8_2:    
+) -> GenerateRequest_V_2_6_5:    
     
     # Validate: controller_id
     if not controller_id:
@@ -87,28 +77,28 @@ def _build_v_2_8_2_request(
         raise ValueError("At least one date in 'daily_plan_dates' is required.")
     
     # Build: audit_log 
-    res_audit_log = AuditParams_V_2_8_2(
+    res_audit_log = AuditParams_V_2_6_5(
         ticket_link=audit_log.ticket_link,
         comment=audit_log.comment,
         time_spent=audit_log.time_spent
     ) if audit_log else None
     
     # Result
-    return GenerateRequest_V_2_8_2(
+    return GenerateRequest_V_2_6_5(
         controller_id=controller_id,
         daily_plan_dates=[
             d for d in daily_plan_dates
         ],
-        schedule_paths=PathItem_V_2_8_2(
+        schedule_paths=PathItem_V_2_6_5(
             folders=[
-                Folder_V_2_8_2(folder=f.folder_path, recursive=f.recursive)
+                Folder_V_2_6_5(folder=f.folder_path, recursive=f.recursive)
                 for f in schedule_folder_paths
             ] if schedule_folder_paths else None,
             singles=schedule_paths
         ),
-        workflow_paths=PathItem_V_2_8_2(
+        workflow_paths=PathItem_V_2_6_5(
             folders=[
-                Folder_V_2_8_2(folder=f.folder_path, recursive=f.recursive)
+                Folder_V_2_6_5(folder=f.folder_path, recursive=f.recursive)
                 for f in workflow_folder_paths
             ] if workflow_folder_paths else None,
             singles=workflow_paths

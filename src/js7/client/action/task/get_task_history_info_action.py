@@ -2,57 +2,47 @@ from typing import Any, Dict
 
 from ...context import Context
 from ....model.public.client.filter.tasks_filter import TasksFilter
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    JobsFilter as JobsFilter_V_2_8_2,
-    TaskHistory as TaskHistory_V_2_8_2,
-    Folder as Folder_V_2_8_2,
-    HistoryState as HistoryState_V_2_8_2,
-    HistoryStateText as HistoryStateText_V_2_8_2,
-    JobCriticality as JobCriticality_V_2_8_2
+from ....api.joc.http.v_2_6_5.tasks.history import history, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    JobsFilter as JobsFilter_V_2_6_5,
+    Folder as Folder_V_2_6_5,
+    HistoryState as HistoryState_V_2_6_5,
+    HistoryStateText as HistoryStateText_V_2_6_5,
+    JobCriticality as JobCriticality_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def get_task_history_info_action(*, context: Context, controller_id: str, filter: TasksFilter) -> Dict[str, Any]:
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
             controller_id=controller_id,
             timezone=context.client_config.timezone,
             filter=filter
         )
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
-    
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="tasks/history", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None,
-    ))
-    
-    if isinstance(result, TaskHistory_V_2_8_2):
+
+        result = history(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return result.model_dump(mode="json").get("history") or {}
     
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *, 
     controller_id: str,
     timezone: str,
     filter: TasksFilter
-) -> JobsFilter_V_2_8_2:
+) -> JobsFilter_V_2_6_5:
     
     # Validate: controller_id: str
     if not controller_id:
         raise ValueError("'controller_id' is required.")
     
-    return JobsFilter_V_2_8_2(
+    return JobsFilter_V_2_6_5(
         controller_id=controller_id,
         time_zone=timezone,
         
@@ -66,17 +56,17 @@ def _build_v_2_8_2_request(
         workflow_path=filter.workflow_paths,
         
         folders=[
-            Folder_V_2_8_2(folder=f.folder_path, recursive=f.recursive)
+            Folder_V_2_6_5(folder=f.folder_path, recursive=f.recursive)
             for f in filter.folders
         ] if filter.folders else None,
         
         history_states=[
-            HistoryState_V_2_8_2(text=HistoryStateText_V_2_8_2(h)) # Raises ValueError() if invalid.
+            HistoryState_V_2_6_5(text=HistoryStateText_V_2_6_5(h)) # Raises ValueError() if invalid.
             for h in filter.history_states
         ] if filter.history_states else None,
         
         criticalities=[
-            JobCriticality_V_2_8_2(c) # Raises ValueError() if invalid.
+            JobCriticality_V_2_6_5(c) # Raises ValueError() if invalid.
             for c in filter.criticalities
         ] if filter.criticalities else None,
         

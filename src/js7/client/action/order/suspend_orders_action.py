@@ -2,55 +2,45 @@ from typing import Optional
 
 from ...context import Context
 from ....model.public.client.common.audit_log import AuditLog
-from ....model.private.api.endpoint import EndpointCall
+from ....api.joc.http.v_2_6_5.orders.suspend import suspend, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
 from ....model.public.client.filter.suspend_order_filter import SuspendOrderFilter
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    OK as OK_V_2_8_2,
-    WorkflowID as WorkflowID_V_2_8_2,
-    AuditParams as AuditParams_V_2_8_2,
-    SuspendOrders as SuspendOrders_V_2_8_2,
-    Folder as Folder_V_2_8_2,
-    OrderStateText as OrderStateText_V_2_8_2
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    WorkflowID as WorkflowID_V_2_6_5,
+    AuditParams as AuditParams_V_2_6_5,
+    SuspendOrders as SuspendOrders_V_2_6_5,
+    Folder as Folder_V_2_6_5,
+    OrderStateText as OrderStateText_V_2_6_5
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def suspend_orders_action(*, context: Context, controller_id: str, filter: SuspendOrderFilter, audit_log: Optional[AuditLog]) -> bool:
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
             controller_id=controller_id, 
             filter=filter, 
             audit_log=audit_log
         )
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
-    
-    # Calls the dispatcher for the matching JOC version
-    result = context.joc_api.dispatch(endpoint_id="orders/suspend", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None,
-    ))
-    
-    if isinstance(result, OK_V_2_8_2):
+
+        result = suspend(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
         return bool(result.ok)
     
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(
+def _build_v_2_6_5_request(
     *, 
     controller_id: str, 
     filter: SuspendOrderFilter, 
     audit_log: Optional[AuditLog]
-) -> SuspendOrders_V_2_8_2:
+) -> SuspendOrders_V_2_6_5:
     
     # Build: res_audit_log
-    res_audit_log = AuditParams_V_2_8_2(
+    res_audit_log = AuditParams_V_2_6_5(
         ticket_link=audit_log.ticket_link,
         comment=audit_log.comment,
         time_spent=audit_log.time_spent
@@ -58,7 +48,7 @@ def _build_v_2_8_2_request(
     
     # Build: res_workflow_ids
     res_workflow_ids = [
-        WorkflowID_V_2_8_2(
+        WorkflowID_V_2_6_5(
             path=id.workflow_path, 
             version_id=id.version_id
         )
@@ -67,7 +57,7 @@ def _build_v_2_8_2_request(
     
     # Build: folders
     res_folders = [
-        Folder_V_2_8_2(
+        Folder_V_2_6_5(
             folder=folder.folder_path,
             recursive=folder.recursive
         )
@@ -76,12 +66,12 @@ def _build_v_2_8_2_request(
     
     # Build: States
     res_states = [
-        OrderStateText_V_2_8_2(state) # Raises ValueError() if invalid.
+        OrderStateText_V_2_6_5(state) # Raises ValueError() if invalid.
         for state in filter.states
     ] if filter.states else None
     
     # Result
-    return SuspendOrders_V_2_8_2(
+    return SuspendOrders_V_2_6_5(
         controller_id=controller_id,
         order_ids=filter.order_ids,
         workflow_ids=res_workflow_ids,

@@ -4,16 +4,15 @@ from ...context import Context
 from ....model.public.client.common.changes import Change, ChangeDependencies, ChangeStatus
 from ....model.public.client.enum.object_types import ObjectType
 from ....model.public.client.enum.operation_type import OperationType
-from ....model.private.api.endpoint import EndpointCall
-from ....model.private.http.joc.joc_v_2_8_2 import (
-    GetDependenciesRequest as GetDependenciesRequest_V_2_8_2,
-    GetDependenciesResponse as GetDependenciesResponse_V_2_8_2,
-    OperationType as OperationType_V_2_8_2,
-    RequestItem as RequestItem_V_2_8_2,
-    ResponseObject as ResponseObject_V_2_8_2,
+from ....api.joc.http.v_2_6_5.inventory.dependencies import dependencies, EndpointCall
+from ....util.version_to_tuple import version_to_tuple
+from ....model.private.http.joc.joc_v_2_6_5 import (
+    GetDependenciesRequest as GetDependenciesRequest_V_2_6_5,
+    GetDependenciesResponse as GetDependenciesResponse_V_2_6_5,
+    OperationType as OperationType_V_2_6_5,
+    RequestItem as RequestItem_V_2_6_5,
+    ResponseObject as ResponseObject_V_2_6_5,
 )
-
-from ....util.check_matching_version import check_matching_version
 
 
 def get_change_dependencies_action(
@@ -26,32 +25,28 @@ def get_change_dependencies_action(
     filter_no_referencing: bool
 ) -> List[ChangeDependencies]:
     
-    if check_matching_version(min="2.6.5", max="2.8.3", check=context.version):
-        request_data = _build_v_2_8_2_request(operation_type=operation_type, changes=changes)
-    else:
-        raise RuntimeError(f"Version {context.version} is not compatible with building the request.")
-    
-    result = context.joc_api.dispatch(endpoint_id="inventory/dependencies", call=EndpointCall(
-        http_service=context.http_service,
-        access_token=context.auth_provider.login(),
-        payload=request_data,
-        options=None,
-    ))
+    if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
+        request_data = _build_v_2_6_5_request(
+            operation_type=operation_type, 
+            changes=changes
+        )
 
-    if isinstance(result, GetDependenciesResponse_V_2_8_2):
-        return _build_v_2_8_2_response(
+        result = dependencies(EndpointCall(
+            http_service=context.http_service,
+            access_token=context.auth_provider.login(),
+            payload=request_data,
+        ))
+        
+        return _build_v_2_6_5_response(
             response=result, 
             filter_paths=filter_paths, 
             filter_no_references=filter_no_references, 
             filter_no_referencing=filter_no_referencing
         )
+    
+    raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 
-    raise RuntimeError(f"Unexpected response type: {type(result).__name__}")
-
-#---------------------#
-# Build 2.8.2 request #
-#---------------------#
-def _build_v_2_8_2_request(*, operation_type: OperationType, changes: List[Tuple[str, ObjectType]]) -> GetDependenciesRequest_V_2_8_2:    
+def _build_v_2_6_5_request(*, operation_type: OperationType, changes: List[Tuple[str, ObjectType]]) -> GetDependenciesRequest_V_2_6_5:    
     # Validate: changes
     if not changes:
         raise ValueError("At least one change in 'changes' is required.")
@@ -65,20 +60,17 @@ def _build_v_2_8_2_request(*, operation_type: OperationType, changes: List[Tuple
         if object_type in {"FOLDER", "JOBRESOURCE", "INCLUDESCRIPT", "REPORT", "DEPLOYMENTDESCRIPTOR", "DESCRIPTORFOLDER"}:
             raise ValueError(f"Object type '{object_type.value}' is not supported for dependency resolution.")
             
-    return GetDependenciesRequest_V_2_8_2(
-        operation_type=OperationType_V_2_8_2(operation_type.value), # Raises ValueError() if invalid.
+    return GetDependenciesRequest_V_2_6_5(
+        operation_type=OperationType_V_2_6_5(operation_type.value), # Raises ValueError() if invalid.
         configurations=[
-            RequestItem_V_2_8_2(name=name, type=object_type.value)
+            RequestItem_V_2_6_5(name=name, type=object_type.value)
             for name, object_type in changes
         ]
     )
 
-#----------------------#
-# Build 2.8.2 response #
-#----------------------#
-def _build_v_2_8_2_response(
+def _build_v_2_6_5_response(
     *,
-    response: GetDependenciesResponse_V_2_8_2,
+    response: GetDependenciesResponse_V_2_6_5,
     filter_paths: Optional[List[str]],
     filter_no_references: bool,
     filter_no_referencing: bool,
@@ -88,7 +80,7 @@ def _build_v_2_8_2_response(
     if not response.objects or not response.requested_items:
         return []
     
-    def _build_status(config: ResponseObject_V_2_8_2) -> Set[ChangeStatus]:
+    def _build_status(config: ResponseObject_V_2_6_5) -> Set[ChangeStatus]:
         status: Set[ChangeStatus] = set()
         if config.valid is True:
             status.add("VALID")
