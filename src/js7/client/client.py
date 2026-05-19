@@ -16,6 +16,7 @@ from .feature.workflow.workflow import Workflow
 from .feature.controller.controller import Controller
 from .feature.iam.iam import IAM
 from .feature.daily_plan.daily_plan import DailyPlan
+from .feature.note.note import Note
 
 from .action.helper.encrypt_action import encrypt_action
 from .action.helper.decrypt_action import decrypt_action
@@ -90,6 +91,10 @@ class Client:
     @cached_property
     def daily_plan(self) -> DailyPlan:
         return DailyPlan(context=self._ctx)
+    
+    @cached_property
+    def note(self) -> Note:
+        return Note(context=self._ctx)
         
     def login(self, auth_config: Optional[AuthConfiguration] = None, force_server_login: bool = False) -> str:
         """

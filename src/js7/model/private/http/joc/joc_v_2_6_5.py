@@ -2217,7 +2217,7 @@ class DeploySubagentClusters(BaseModel):
     controller_id: Optional[str] = None
     subagent_cluster_ids: Optional[List[str]] = None
     
-    
+ 
 class OrdersFilterV(BaseModel):
     compact: Optional[bool] = None
     """controls if the object's data is compact or detailed"""
@@ -3658,3 +3658,296 @@ class DeleteNotices(ModifyNotice):
     notice_board_path: Optional[str] = None
     notice_ids: Optional[List[str]] = None
     notices: Optional[List[Notice]] = None
+    
+
+class Advanced(BaseModel):
+    """com.sos.joc.model.inventory.search.RequestSearchAdvancedItem"""
+    
+    agent_name: Optional[str] = None
+    argument_name: Optional[str] = None
+    argument_value: Optional[str] = None
+    calendar: Optional[str] = None
+    env_name: Optional[str] = None
+    env_value: Optional[str] = None
+    file_order_source: Optional[str] = None
+    include_script: Optional[str] = None
+    job_count_from: Optional[int] = None
+    job_count_to: Optional[int] = None
+    job_criticality: Optional[JobCriticality] = None
+    job_name: Optional[str] = None
+    job_name_exact_match: Optional[bool] = None
+    job_resource: Optional[str] = None
+    job_script: Optional[str] = None
+    job_template: Optional[str] = None
+    lock: Optional[str] = None
+    notice_board: Optional[str] = None
+    schedule: Optional[str] = None
+    workflow: Optional[str] = None
+
+
+class RequestBaseSearchFilter(BaseModel):
+    """com.sos.joc.model.inventory.search.RequestBaseSearchFilter"""
+    
+    advanced: Optional[Advanced] = None
+    folders: Optional[List[str]] = None
+    search: Optional[str] = None
+    """pattern with wildcards '*' and '?' where '*' match zero or more characters and '?' match
+    any single character
+    """
+    tags: Optional[List[str]] = None
+
+
+class WorkflowSearchFilter(RequestBaseSearchFilter):
+    """com.sos.joc.model.workflow.search.WorkflowSearchFilter"""
+    
+    controller_id: Optional[str] = None
+    instruction_states: Optional[List[SearchInstructionStateText]] = None
+    states: Optional[List[SyncStateText]] = None
+    
+
+class ResponseBaseSearchItem(BaseModel):
+    """com.sos.joc.model.inventory.search.ResponseBaseSearchItem"""
+    
+    group: Optional[str] = None
+    name: Optional[str] = None
+    object_type: Optional[CommonConfigurationType] = None
+    ordering: Optional[int] = None
+    path: Optional[str] = None
+    """absolute path of an object."""
+    
+
+class ResponseSearchItem(ResponseBaseSearchItem):
+    """com.sos.joc.model.inventory.search.ResponseSearchItem"""
+    
+    controller_id: Optional[str] = None
+    deleted: Optional[bool] = None
+    deployed: Optional[bool] = None
+    has_deployments: Optional[bool] = None
+    has_releases: Optional[bool] = None
+    id: Optional[float] = None
+    permitted: Optional[bool] = None
+    released: Optional[bool] = None
+    title: Optional[str] = None
+    valid: Optional[bool] = None
+    
+
+class ResponseSearch(BaseModel):
+    """com.sos.joc.model.inventory.search.ResponseSearch"""
+    
+    delivery_date: Optional[datetime] = None
+    """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
+
+    results: Optional[List[ResponseSearchItem]] = None
+
+
+class OrdersHistoricSummary(BaseModel):
+    """com.sos.joc.model.order.OrdersHistoricSummary"""
+    
+    failed: Optional[int] = None
+    successful: Optional[int] = None
+
+
+class OrdersOverView(BaseModel):
+    """com.sos.joc.model.order.OrdersOverView"""
+    
+    delivery_date: Optional[datetime] = None
+    """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
+
+    orders: Optional[OrdersHistoricSummary] = None
+    survey_date: Optional[datetime] = None
+    """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
+
+
+class NoteIdentifier(BaseModel):
+    """com.sos.joc.model.note.common.NoteIdentifier"""
+    
+    name: Optional[str] = None
+    object_type: Optional[CommonConfigurationType] = None
+    
+
+class CreatedBy(BaseModel):
+    user_name: Optional[str] = None
+
+
+class DisplayPreferences(BaseModel):
+    """com.sos.joc.model.note.common.DisplayPreferences"""
+    
+    height: Optional[int] = None
+    width: Optional[int] = None
+
+
+class ModifiedBy(BaseModel):
+    user_name: Optional[str] = None
+
+
+class Metadata(BaseModel):
+    """com.sos.joc.model.note.common.Metadata"""
+    
+    created: Optional[datetime] = None
+    """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
+
+    created_by: Optional[CreatedBy] = None
+    display_preferences: Optional[DisplayPreferences] = None
+    modified: Optional[datetime] = None
+    """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
+
+    modified_by: Optional[ModifiedBy] = None
+    participant_count: Optional[int] = None
+    post_count: Optional[int] = None
+    severity: Optional[Severity] = None
+
+
+class Participant(BaseModel):
+    modified: Optional[datetime] = None
+    """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
+
+    post_count: Optional[int] = None
+
+
+class Author(BaseModel):
+    user_name: Optional[str] = None
+
+
+class Post(BaseModel):
+    """com.sos.joc.model.note.common.Post"""
+    
+    author: Optional[Author] = None
+    content: Optional[str] = None
+    posted: Optional[datetime] = None
+    """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
+
+    post_id: Optional[int] = None
+    severity: Optional[Severity] = None
+
+
+class Note(NoteIdentifier):
+    """com.sos.joc.model.note.common.Note"""
+    
+    metadata: Optional[Metadata] = None
+    note_id: Optional[float] = None
+    participants: Optional[List[Participant]] = None
+    path: Optional[str] = None
+    """absolute path of an object."""
+
+    posts: Optional[List[Post]] = None
+    
+
+class NoteResponse(Note):
+    """com.sos.joc.model.note.NoteResponse"""
+    
+    delivery_date: Optional[datetime] = None
+    """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
+
+
+class ModifyRequest(NoteIdentifier):
+    """com.sos.joc.model.note.common.ModifyRequest"""
+    
+    audit_log: Optional[AuditParams] = None
+    
+
+class AddPost(ModifyRequest):
+    """com.sos.joc.model.note.AddPost"""
+    
+    content: Optional[str] = None
+    severity: Optional[Severity] = None
+    
+    
+class OrderHistoryFilter(BaseModel):
+    """com.sos.joc.model.order.OrderHistoryFilter"""
+    
+    controller_id: Optional[str] = None
+    history_id: Optional[int] = None
+    order_id: Optional[str] = None
+    
+    
+class EventType(str, Enum):
+    """com.sos.controller.model.event.EventType"""
+
+    VERSION_ADDED = "VersionAdded"
+    FILE_BASED_CHANGED = "FileBasedChanged"
+    CONTROLLER_READY = "ControllerReady"
+    AGENT_READY = "AgentReady"
+    ORDER_ADDED = "OrderAdded"
+    ORDER_ATTACHABLE = "OrderAttachable"
+    ORDER_STARTED = "OrderStarted"
+    ORDER_TRANSFERRED_TO_AGENT = "OrderTransferredToAgent"
+    ORDER_PROCESSING_STARTED = "OrderProcessingStarted"
+    ORDER_STDOUT_WRITTEN = "OrderStdoutWritten"
+    ORDER_STDERR_WRITTEN = "OrderStderrWritten"
+    ORDER_PROCESSED = "OrderProcessed"
+    ORDER_RESUMED = "OrderResumed"
+    ORDER_RESUME_MARKED = "OrderResumeMarked"
+    ORDER_FORKED = "OrderForked"
+    ORDER_JOINED = "OrderJoined"
+    ORDER_OFFERED = "OrderOffered"
+    ORDER_RETRYING = "OrderRetrying"
+    ORDER_AWAITING = "OrderAwaiting"
+    ORDER_MOVED = "OrderMoved"
+    ORDER_DETACHABLE = "OrderDetachable"
+    ORDER_DETACHED = "OrderDetached"
+    ORDER_FAILED = "OrderFailed"
+    ORDER_CATCHED = "OrderCatched"
+    ORDER_AWOKE = "OrderAwoke"
+    ORDER_FAILED_IN_FORK = "OrderFailedinFork"
+    ORDER_SUSPENDED = "OrderSuspended"
+    ORDER_SUSPEND_MARKED = "OrderSuspendMarked"
+    ORDER_BROKEN = "OrderBroken"
+    ORDER_CANCELLED = "OrderCancelled"
+    ORDER_FINISHED = "OrderFinished"
+    ORDER_LOCK_ACQUIRED = "OrderLockAcquired"
+    ORDER_LOCK_QUEUED = "OrderLockQueued"
+    ORDER_LOCK_RELEASED = "OrderLockReleased"
+
+
+class OrderLogEntryError(BaseModel):
+    """com.sos.joc.model.history.order.OrderLogEntryError"""
+
+    error_state: Optional[str] = None
+    error_reason: Optional[str] = None
+    error_code: Optional[str] = None
+    error_text: Optional[str] = None
+
+
+class LockState(BaseModel):
+    """com.sos.joc.model.history.order.LockState"""
+
+    order_ids: Optional[str] = None
+    queued_order_ids: Optional[str] = None
+
+
+class Lock(BaseModel):
+    """com.sos.joc.model.history.order.Lock"""
+
+    lock_name: Optional[str] = None
+    limit: Optional[int] = None
+    count: Optional[int] = None
+    lock_state: Optional[LockState] = None
+
+
+class OrderLogEntry(BaseModel):
+    """com.sos.joc.model.history.order.OrderLogEntry"""
+
+    controller_datetime: Optional[str] = None
+    agent_datetime: Optional[str] = None
+    order_id: Optional[str] = None
+    log_level: Optional[str] = None
+    log_event: Optional[EventType] = None
+    position: Optional[str] = None
+    agent_id: Optional[str] = None
+    agent_name: Optional[str] = None
+    agent_url: Optional[str] = None
+    subagent_cluster_id: Optional[str] = None
+    job: Optional[str] = None
+    task_id: Optional[float] = None
+    return_code: Optional[float] = None
+    error: Optional[OrderLogEntryError] = None
+    lock: Optional[Lock] = None
+
+
+class OrderLog(BaseModel):
+    """com.sos.joc.model.order.OrderLog"""
+
+    complete: Optional[bool] = None
+    event_id: Optional[float] = None
+    history_id: Optional[float] = None
+    log_events: Optional[List[OrderLogEntry]] = None

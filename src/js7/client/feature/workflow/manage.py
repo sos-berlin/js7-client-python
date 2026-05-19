@@ -1,9 +1,9 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from ....client.context import Context
-
 from ....model.public.client.common.audit_log import AuditLog
 
+from ...action.workflow.search_workflows_action import search_workflows_action
 from ...action.workflow.get_workflow_versions_action import get_workflow_versions_action
 from ...action.workflow.set_workflow_version_as_current_action import set_workflow_version_as_current_action
 
@@ -99,4 +99,33 @@ class Manage:
             audit_log=audit_log
         )
         
-    
+    def search_workflows(self, controller_id: str, search: str) -> List[str]:
+        """
+        Searches deployed workflows.
+        
+        Args:
+            controller_id (str):
+                The ID of the controller on which the operation should be executed.
+                
+            search (str):
+                Limits result to a specified glob pattern that supports `*` and `?` as wildcards 
+                where `*` match zero or more characters and `?` match any single character.
+                
+        Returns:
+            List[str]:
+                Returns a list of workflow paths.
+            
+        Raises:
+            ValueError:
+                If required arguments such as `controller_id` or `search` are missing or invalid.
+
+            RuntimeError:
+                If the server version is not compatible or if an
+                unexpected response is returned.
+        """
+        
+        return search_workflows_action(
+            context=self._ctx,
+            controller_id=controller_id,
+            search=search
+        )
