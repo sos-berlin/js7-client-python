@@ -5,8 +5,8 @@ from ....model.public.client.common.audit_log import AuditLog
 from ....api.joc.http.v_2_6_5.agent.cluster.switchover import switchover, EndpointCall
 from ....util.version_to_tuple import version_to_tuple
 from ....model.private.http.joc.joc_v_2_6_5 import (
-    AuditParams as AuditParams_V_2_8_2,
-    AgentCommand as AgentCommand_V_2_8_2
+    AuditParams as AuditParams_V_2_6_5,
+    AgentCommand as AgentCommand_V_2_6_5
 )
 
 
@@ -40,7 +40,7 @@ def _build_v_2_6_5_request(
     controller_id: str, 
     agent_id: str,
     audit_log: Optional[AuditLog]
-) -> AgentCommand_V_2_8_2:
+) -> AgentCommand_V_2_6_5:
     
     # Validates controller_id
     if not controller_id:
@@ -51,14 +51,14 @@ def _build_v_2_6_5_request(
         raise ValueError("'agent_id' is required.")
     
     # Build: Audit Log
-    res_audit_log = AuditParams_V_2_8_2(
+    res_audit_log = AuditParams_V_2_6_5(
         ticket_link=audit_log.ticket_link,
         comment=audit_log.comment,
         time_spent=audit_log.time_spent
     ) if audit_log else None
 
     # Result
-    return AgentCommand_V_2_8_2(
+    return AgentCommand_V_2_6_5(
         controller_id=controller_id,
         agent_id=agent_id,
         audit_log=res_audit_log

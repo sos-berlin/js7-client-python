@@ -41,5 +41,5 @@ class ResumeOrderFilter(BaseModel):
     An object with key-value pairs. The value can be a string, number or boolean.
     """
 
-    cycle_end_time: Optional[float] = None
+    cycle_end_time: Optional[int] = None
     """A relative cycle end time in seconds."""

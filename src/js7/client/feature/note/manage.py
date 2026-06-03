@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Literal, Optional, List
 
 from js7.model.public.client.common.audit_log import AuditLog
 
@@ -18,7 +18,7 @@ class Manage:
         self,
         name: str,
         object_type: ObjectType
-    ) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
         """
         Gets a note.
         

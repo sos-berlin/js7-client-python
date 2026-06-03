@@ -8,8 +8,7 @@ from ....util.version_to_tuple import version_to_tuple
 from ....model.private.http.joc.joc_v_2_6_5 import (
     AuditParams as AuditParams_V_2_6_5,
     AddCredentialsFilter as AddCredentialsFilter_V_2_6_5,
-    GitCredential as GitCredential_V_2_6_5,
-    GitCredentials as GitCredentials_V_2_6_5
+    GitCredential as GitCredential_V_2_6_5
 )
 
 
@@ -77,18 +76,14 @@ def _build_v_2_6_5_request(
     return AddCredentialsFilter_V_2_6_5(
         audit_log=res_audit_log,
         credentials=[
-            GitCredentials_V_2_6_5(
-                credentials=[
-                    GitCredential_V_2_6_5(
-                        email=credentials.email,
-                        git_account=credentials.git_account,
-                        git_server=credentials.git_server,
-                        keyfile_path=credentials.keyfile_path,
-                        password=credentials.password,
-                        personal_access_token=credentials.personal_access_token,
-                        username=credentials.username
-                    )
-                ]
+            GitCredential_V_2_6_5(
+                email=credentials.email,
+                git_account=credentials.git_account,
+                git_server=credentials.git_server,
+                keyfile_path=credentials.keyfile_path,
+                password=credentials.password,
+                personal_access_token=credentials.personal_access_token,
+                username=credentials.username
             )
         ]
     )

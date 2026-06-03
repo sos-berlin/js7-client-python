@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from ...context import Context
 from ....api.joc.http.v_2_6_5.orders.history import history, EndpointCall
@@ -11,7 +11,7 @@ from ....model.private.http.joc.joc_v_2_6_5 import (
 )
 
 
-def get_order_history_action(*, context: Context, controller_id: str, filter: OrderHistoryFilter) -> Dict[str, Any]:
+def get_orders_history_action(*, context: Context, controller_id: str, filter: OrderHistoryFilter) -> List[Dict[str, Any]]:
     if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
         request_data = _build_v_2_6_5_request(
             controller_id=controller_id,
@@ -25,7 +25,7 @@ def get_order_history_action(*, context: Context, controller_id: str, filter: Or
             payload=request_data,
         ))
         
-        return result.model_dump(mode="json")
+        return result.model_dump(mode="json").get("history") or []
     
     raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 

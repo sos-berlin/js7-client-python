@@ -5,7 +5,7 @@ from ....model.public.client.filter.order_history_filter import OrderHistoryFilt
 from ....model.public.client.filter.get_order_filter import GetOrderFilter
 from ....model.public.client.input.add_order import Order
 
-from ...action.order.get_order_history_action import get_order_history_action
+from ...action.order.get_orders_history_action import get_orders_history_action
 from ...action.order.get_orders_action import get_orders_action
 from ...action.order.get_orders_overview_action import get_orders_overview_action
 from ...action.order.get_order_log_action import get_order_log_action
@@ -15,9 +15,9 @@ class Manage:
     def __init__(self, context: Context):
         self._ctx = context
         
-    def get_order_history(self, controller_id: str, filter: OrderHistoryFilter) -> Dict[str, Any]:
+    def get_orders_history(self, controller_id: str, filter: OrderHistoryFilter) -> List[Dict[str, Any]]:
         """
-        Retrieve the order history for the specified controller.
+        Retrieves the orders history for the specified controller.
 
         Args:
             controller_id (str):
@@ -28,8 +28,8 @@ class Manage:
                 Defines the criteria used to filter the order history.
 
         Returns:
-            Dict[str, Any]:
-                A dictionary containing the order history data.
+            List[Dict[str, Any]]:
+                A dictionary list containing the order history data.
 
         Raises:
             ValueError:
@@ -40,7 +40,7 @@ class Manage:
                 is incompatible.
         """
         
-        return get_order_history_action(
+        return get_orders_history_action(
             context=self._ctx,
             controller_id=controller_id,
             filter=filter
@@ -134,7 +134,7 @@ class Manage:
         self,
         controller_id: str,
         history_id: int
-    ) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
         """
         Returns the log of an executed order.
         
@@ -147,7 +147,7 @@ class Manage:
                 
         Returns:
             Dict[str, Any]:
-                Array of logEvents.
+                List of log events.
                 
         Raises:
             ValueError:

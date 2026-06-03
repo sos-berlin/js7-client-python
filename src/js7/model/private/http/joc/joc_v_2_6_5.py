@@ -441,7 +441,7 @@ class SecurityConfigurationAccount(BaseModel):
     force_password_change: Optional[bool] = None
     """controls if the account is forced to change the password"""
 
-    identity_service_id: Optional[float] = None
+    identity_service_id: Optional[int] = None
     old_password: Optional[str] = None
     password: Optional[str] = None
     repeated_password: Optional[str] = None
@@ -537,7 +537,7 @@ class CommonRequestFilter(BaseModel):
     
     audit_log: Optional[AuditParams] = None
     controller_id: Optional[str] = None
-    id: Optional[float] = None
+    id: Optional[int] = None
     object_type: Optional[CommonConfigurationType] = None
     path: Optional[str] = None
     
@@ -565,7 +565,7 @@ class ResponseItemDeployment(BaseModel):
     deployment_date: Optional[datetime] = None
     """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
 
-    deployment_id: Optional[float] = None
+    deployment_id: Optional[int] = None
     path: Optional[str] = None
     """absolute path of an object."""
 
@@ -576,12 +576,12 @@ class ResponseDeployableVersion(BaseModel):
     """com.sos.joc.model.inventory.deploy.ResponseDeployableVersion"""
     
     commit_id: Optional[str] = None
-    deployment_id: Optional[float] = None
+    deployment_id: Optional[int] = None
     deployment_operation: Optional[str] = None
     deployment_path: Optional[str] = None
     """absolute path of an object."""
 
-    id: Optional[float] = None
+    id: Optional[int] = None
     version_date: Optional[datetime] = None
     """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
 
@@ -1121,7 +1121,7 @@ class ConfigurationObject(BaseModel):
     has_deployments: Optional[bool] = None
     has_note: Optional[Severity] = None
     has_releases: Optional[bool] = None
-    id: Optional[float] = None
+    id: Optional[int] = None
     invalid_msg: Optional[str] = None
     is_referenced_by: Optional[Dict[str, int]] = None
     name: Optional[str] = None
@@ -1212,7 +1212,7 @@ class ResponseNewPath(BaseModel):
     delivery_date: Optional[datetime] = None
     """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
 
-    id: Optional[float] = None
+    id: Optional[int] = None
     object_type: Optional[CommonConfigurationType] = None
     path: Optional[str] = None
 
@@ -1235,10 +1235,10 @@ class GetDependenciesRequest(BaseModel):
 class ResponseObject(ConfigurationObject):
     """com.sos.joc.model.inventory.dependencies.get.ResponseObject"""
     
-    enforced_referenced_by: Optional[List[float]] = None
-    enforced_references: Optional[List[float]] = None
-    referenced_by: Optional[List[float]] = None
-    references: Optional[List[float]] = None
+    enforced_referenced_by: Optional[List[int]] = None
+    enforced_references: Optional[List[int]] = None
+    referenced_by: Optional[List[int]] = None
+    references: Optional[List[int]] = None
 
 
 class GetDependenciesResponse(BaseModel):
@@ -1248,7 +1248,7 @@ class GetDependenciesResponse(BaseModel):
     """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
 
     objects: Optional[Dict[str, ResponseObject]] = None
-    requested_items: Optional[List[float]] = None
+    requested_items: Optional[List[int]] = None
 
 
 class ExportFilter(BaseModel):
@@ -1857,7 +1857,7 @@ class AddCredentialsFilter(BaseModel):
     """com.sos.joc.model.publish.git.AddCredentialsFilter"""
     
     audit_log: Optional[AuditParams] = None
-    credentials: List[GitCredentials]
+    credentials: Optional[List[GitCredential]] = None
     
 
 class WorkflowID(BaseModel):
@@ -2029,7 +2029,7 @@ class ControllerInfo(BaseModel):
     connection_state: Optional[ConnectionState] = None
     controller_id: Optional[str] = None
     host: Optional[str] = None
-    id: Optional[float] = None
+    id: Optional[int] = None
     is_coupled: Optional[bool] = None
     os: Optional[OS] = None
     role: Optional[ControllerRole] = None
@@ -2064,7 +2064,7 @@ class RegisterParameter(BaseModel):
     """com.sos.joc.model.controller.RegisterParameter"""
     
     cluster_url: Optional[str] = None
-    id: Optional[float] = None
+    id: Optional[int] = None
     role: Optional[ControllerRole] = None
     title: Optional[str] = None
     url: Optional[str] = None
@@ -2339,7 +2339,7 @@ class Parameter(BaseModel):
     """com.sos.inventory.model.workflow.Parameter"""
 
     type: Optional[ParameterType] = None
-    default: Optional[Union[str, float, bool, List[Any]]] = None
+    default: Optional[Union[str, int, bool, List[Any]]] = None
     facet: Optional[str] = None
     final: Optional[str] = None
     list: Optional[List[str]] = None
@@ -2439,7 +2439,7 @@ class OrderV(BaseModel):
     retry_state: Optional[OrderRetryState] = None
     """set if state == DelayedAfterError"""
 
-    scheduled_for: Optional[float] = None
+    scheduled_for: Optional[int] = None
     scheduled_never: Optional[bool] = None
     """deprecated -> is State.PENDING"""
 
@@ -2484,7 +2484,7 @@ class SuspendOrders(ModifyOrdersBase):
 class ResumeOrders(ModifyOrdersBase):
     """com.sos.joc.model.order.ResumeOrders"""
     
-    cycle_end_time: Optional[float] = None
+    cycle_end_time: Optional[int] = None
     force: Optional[bool] = None
     """force execution of non-startable jobs after kill"""
 
@@ -2553,7 +2553,7 @@ class JOCConfiguration(BaseModel):
 
     configuration_type: Optional[JOCConfigurationType] = None
     controller_id: Optional[str] = None
-    id: Optional[float] = None
+    id: Optional[int] = None
     name: Optional[str] = None
     object_type: Optional[str] = None
     shared: Optional[bool] = None
@@ -2804,7 +2804,7 @@ class Cockpit(BaseModel):
     """true if joc is that joc which sends this response"""
 
     host: Optional[str] = None
-    id: Optional[float] = None
+    id: Optional[int] = None
     instance_id: Optional[str] = None
     is_api_server: Optional[bool] = None
     last_heartbeat: Optional[datetime] = None
@@ -2849,7 +2849,7 @@ class DailyPlanOrdersFilter(DailyPlanOrderFilterBase):
     late: Optional[bool] = None
     order_tags: Optional[List[str]] = None
     states: Optional[List[DailyPlanOrderStateText]] = None
-    submission_history_ids: Optional[List[float]] = None
+    submission_history_ids: Optional[List[int]] = None
     workflow_tags: Optional[List[str]] = None
     
 
@@ -2869,7 +2869,7 @@ class Period(BaseModel):
     end: Optional[datetime] = None
     """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
 
-    repeat: Optional[float] = None
+    repeat: Optional[int] = None
     
 
 class PlannedOrderItem(BaseModel):
@@ -2953,7 +2953,7 @@ class OrdersFilter(BaseModel):
 
     exclude_workflows: Optional[List[str]] = None
     folders: Optional[List[Folder]] = None
-    history_ids: Optional[List[float]] = None
+    history_ids: Optional[List[int]] = None
     history_states: Optional[List[HistoryStateText]] = None
     limit: Optional[int] = None
     """only for db history urls to restrict the number of responsed records; -1=unlimited"""
@@ -2994,7 +2994,7 @@ class OrderHistoryItem(BaseModel):
     end_time: Optional[datetime] = None
     """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
 
-    history_id: Optional[float] = None
+    history_id: Optional[int] = None
     order_id: Optional[str] = None
     order_state: Optional[OrderState] = None
     planned_time: Optional[datetime] = None
@@ -3028,7 +3028,7 @@ class OrderHistory(BaseModel):
 class TaskIdOfOrder(BaseModel):
     """com.sos.joc.model.job.TaskIdOfOrder"""
 
-    history_id: Optional[float] = None
+    history_id: Optional[int] = None
     position: Optional[str] = None
     
     
@@ -3067,7 +3067,7 @@ class JobsFilter(BaseModel):
     limit: Optional[int] = None
     """only for db history urls to restrict the number of responsed records; -1=unlimited"""
 
-    task_ids: Optional[List[float]] = None
+    task_ids: Optional[List[int]] = None
     time_zone: Optional[str] = None
     """see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"""
 
@@ -3108,7 +3108,7 @@ class TaskHistoryItem(BaseModel):
     survey_date: Optional[datetime] = None
     """Value is UTC timestamp in ISO 8601 YYYY-MM-DDThh:mm:ss.sZ or empty"""
 
-    task_id: Optional[float] = None
+    task_id: Optional[int] = None
     workflow: Optional[str] = None
 
 
@@ -3557,7 +3557,7 @@ class MetaItem(BaseModel):
     order_names: Optional[List[str]] = None
     """this property is only set if the schedule defines orders"""
 
-    total_orders: Optional[float] = None
+    total_orders: Optional[int] = None
     workflow_paths: Optional[List[str]] = None
     """this property is only used for a shorter response of ./projections/day API"""
 
@@ -3594,7 +3594,7 @@ class ProjectionsDayRequest(BaseModel):
 class WorkflowItem(BaseModel):
     """com.sos.joc.model.dailyplan.projections.items.meta.WorkflowItem"""
     
-    avg: Optional[float] = None
+    avg: Optional[int] = None
     
 
 class ScheduleInfoItem(BaseModel):
@@ -3604,7 +3604,7 @@ class ScheduleInfoItem(BaseModel):
     order_names: Optional[List[str]] = None
     """this property is only set if the schedule defines orders"""
 
-    total_orders: Optional[float] = None
+    total_orders: Optional[int] = None
     workflow_paths: Optional[List[str]] = None
     """this property is only used for a shorter response of ./projections/day API"""
 
@@ -3631,7 +3631,7 @@ class Configuration(BaseModel):
 
     configuration_type: Optional[ConfigurationType] = None
     controller_id: Optional[str] = None
-    id: Optional[float] = None
+    id: Optional[int] = None
     name: Optional[str] = None
     object_type: Optional[str] = None
     shared: Optional[bool] = None
@@ -3724,7 +3724,7 @@ class ResponseSearchItem(ResponseBaseSearchItem):
     deployed: Optional[bool] = None
     has_deployments: Optional[bool] = None
     has_releases: Optional[bool] = None
-    id: Optional[float] = None
+    id: Optional[int] = None
     permitted: Optional[bool] = None
     released: Optional[bool] = None
     title: Optional[str] = None
@@ -3824,7 +3824,7 @@ class Note(NoteIdentifier):
     """com.sos.joc.model.note.common.Note"""
     
     metadata: Optional[Metadata] = None
-    note_id: Optional[float] = None
+    note_id: Optional[int] = None
     participants: Optional[List[Participant]] = None
     path: Optional[str] = None
     """absolute path of an object."""
@@ -3938,8 +3938,8 @@ class OrderLogEntry(BaseModel):
     agent_url: Optional[str] = None
     subagent_cluster_id: Optional[str] = None
     job: Optional[str] = None
-    task_id: Optional[float] = None
-    return_code: Optional[float] = None
+    task_id: Optional[int] = None
+    return_code: Optional[int] = None
     error: Optional[OrderLogEntryError] = None
     lock: Optional[Lock] = None
 
@@ -3948,6 +3948,13 @@ class OrderLog(BaseModel):
     """com.sos.joc.model.order.OrderLog"""
 
     complete: Optional[bool] = None
-    event_id: Optional[float] = None
-    history_id: Optional[float] = None
+    event_id: Optional[int] = None
+    history_id: Optional[int] = None
     log_events: Optional[List[OrderLogEntry]] = None
+    
+    
+class TaskFilter(BaseModel):
+    """com.sos.joc.model.job.TaskFilter"""
+    
+    controller_id: Optional[str] = None
+    task_id: Optional[int] = None

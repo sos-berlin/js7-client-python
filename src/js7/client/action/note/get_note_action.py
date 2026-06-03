@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from ...context import Context
 from ....api.joc.http.v_2_6_5.note.note import note, EndpointCall
@@ -15,7 +15,7 @@ def get_note_action(
     context: Context,
     name: str,
     object_type: ObjectType
-) -> Dict[str, Any]:
+) -> List[Dict[str, Any]]:
     
     if version_to_tuple(context.version) >= version_to_tuple("2.6.5"):
         request_data = _build_v_2_6_5_request(
@@ -29,7 +29,7 @@ def get_note_action(
             payload=request_data,
         ))
 
-        return result.model_dump(mode="json").get("posts") or {}
+        return result.model_dump(mode="json").get("posts") or []
         
     raise RuntimeError(f"JOC Cockpit version {context.version} is not supported. Minimum required version is 2.6.5.")
 

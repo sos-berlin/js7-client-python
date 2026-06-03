@@ -106,11 +106,14 @@ class HTTPService:
         if conn is None:
             raise RuntimeError("Connection not initialized.")
         
+        # Encode body to UTF-8 bytes if it's a string
+        encoded_body: Optional[bytes] = body.encode("utf-8") if isinstance(body, str) else body
+    
         response: Optional[http.client.HTTPResponse] = None
         
         # Reconnects and retries the request once on connection failure
         try:
-            conn.request(method=method, url=path, body=body, headers=headers)
+            conn.request(method=method, url=path, body=encoded_body, headers=headers)
             response = conn.getresponse()
         except (BrokenPipeError, ConnectionResetError, TimeoutError):
             self.close()
@@ -121,7 +124,7 @@ class HTTPService:
             conn = self._conn
             if conn is None:
                 raise RuntimeError("Connection not initialized after reconnect.")
-            conn.request(method=method, url=path, body=body, headers=headers)
+            conn.request(method=method, url=path, body=encoded_body, headers=headers)
             response = conn.getresponse()
         
         return response
