@@ -6,6 +6,7 @@ from ....model.public.client.common.audit_log import AuditLog
 from ...action.workflow.search_workflows_action import search_workflows_action
 from ...action.workflow.get_workflow_versions_action import get_workflow_versions_action
 from ...action.workflow.set_workflow_version_as_current_action import set_workflow_version_as_current_action
+from ...action.workflow.get_workflow_action import get_workflow_action
 
 
 class Manage:
@@ -128,4 +129,43 @@ class Manage:
             context=self._ctx,
             controller_id=controller_id,
             search=search
+        )
+        
+    def get_workflow(
+        self,
+        controller_id: str,
+        workflow_path: str,
+        compact: bool = False
+    ):
+        """
+        Returns a workflow.
+        
+        Args:
+            controller_id (str):
+                The ID of the controller on which the operation should be executed.
+            
+            workflow_path (str):
+                The full path of the workflow.
+            
+            compact (bool):
+                A compact response is returned if this parameter is `True`.
+                
+        Returns:
+            Dict[str, Any]:
+                Returns the workflow as dictionary.
+                
+        Raises:
+            ValueError:
+                If required arguments such as `controller_id` or `workflow_path` are missing or invalid.
+
+            RuntimeError:
+                If the server version is not compatible or if an
+                unexpected response is returned.
+        """
+        
+        return get_workflow_action(
+            context=self._ctx,
+            controller_id=controller_id,
+            workflow_path=workflow_path,
+            compact=compact       
         )

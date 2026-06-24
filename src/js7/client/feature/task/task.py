@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from ....client.context import Context
 from ....model.public.client.filter.tasks_filter import TasksFilter
@@ -16,7 +16,7 @@ class Manage:
         self,
         controller_id: str,
         filter: TasksFilter
-    ) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
         """
         Args:
             controller_id (str): 
@@ -26,7 +26,7 @@ class Manage:
                 Filter used to control the results.
 
         Returns:
-            Dict ([str, Any]): 
+            List (Dict[str, Any]): 
                 A JSON representation of the task history.
             
         Raises:

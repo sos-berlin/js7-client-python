@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from .......service.http_service import HTTPService
 from .......model.private.http.joc.joc_v_2_6_5 import IdentityServiceRename, OK
@@ -27,4 +28,8 @@ def rename(call: EndpointCall) -> OK:
             }
         )
         
-        return OK.model_validate_json(resp)
+        # Patch: The status code is validated in the validator: ./js7/validator/http/joc_http_status_validator.py
+        now = datetime.now(timezone.utc)
+        if not resp:
+            return OK(delivery_date=now, ok=False)
+        return OK(delivery_date=now, ok=True)
