@@ -23,15 +23,12 @@ def detect_archive_type(file: Union[bytes, Path]) -> Optional[Literal["ZIP", "TA
     if isinstance(file, bytes):
         return _detect_from_bytes(file)
 
-    if isinstance(file, Path):
-        if not file.exists() or not file.is_file():
-            return None
+    if not file.exists() or not file.is_file():
+        return None
 
-        try:
-            with file.open("rb") as f:
-                head = f.read(4)
-            return _detect_from_bytes(head)
-        except OSError:
-            return None
-
-    return None
+    try:
+        with file.open("rb") as f:
+            head = f.read(4)
+        return _detect_from_bytes(head)
+    except OSError:
+        return None

@@ -14,6 +14,7 @@ def get_workflow_action(
     context: Context, 
     controller_id: str, 
     workflow_path: str,
+    version_id: str | None,
     compact: bool
 ) -> Dict[str, Any]:
 
@@ -21,6 +22,7 @@ def get_workflow_action(
         request_data = _build_v_2_6_5_request(
             controller_id=controller_id, 
             workflow_path=workflow_path, 
+            version_id=version_id,
             compact=compact
         )
 
@@ -38,6 +40,7 @@ def _build_v_2_6_5_request(
     *,
     controller_id: str, 
     workflow_path: str,
+    version_id: str | None,
     compact: bool
 ) -> WorkflowFilter_V_2_6_5:
 
@@ -53,7 +56,8 @@ def _build_v_2_6_5_request(
     return WorkflowFilter_V_2_6_5(
         controller_id=controller_id,
         workflow_id=WorkflowID_V_2_6_5(
-            path=workflow_path
+            path=workflow_path,
+            version_id=version_id
         ),
         compact=compact
     )

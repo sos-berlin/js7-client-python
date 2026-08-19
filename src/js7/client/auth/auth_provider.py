@@ -27,64 +27,72 @@ class AuthProvider:
     
     def login(self, auth_config: Optional[AuthConfiguration] = None, force_server_login: bool = False) -> str:
         """Returns the access token"""
-        
-        # Checks whether the access token is still valid
-        if self._access_token and self._access_token_expires_at > time.time():
-            # Returns the cached access token if no forced server login is required
-            if not force_server_login:
-                return self._access_token
-            
-            # Return stored access token if no auth was provided
-            if self._access_token and not auth_config:
-                return self._access_token
-            
+
+        # Returns the cached access token if it is still valid and no server login is forced
+        if (
+            self._access_token
+            and self._access_token_expires_at > time.time()
+            and not force_server_login
+        ):
+            return self._access_token
+
         if not auth_config:
-            self._auth_cache = None
-            raise ValueError("Authentication failed.")
-        
+            auth_config = self._auth_cache
+
+        if not auth_config:
+            raise ValueError(
+                "Authentication failed. No credentials available for (re-)login."
+            )
+
         # Performs certificate login
         if auth_config.cert_auth:
             # Sets cert file paths in server handler
             self._http_service.auth_certfile_path = auth_config.cert_auth.certfile_path
-            self._http_service.auth_keyfile_path  = auth_config.cert_auth.keyfile_path
-            
+            self._http_service.auth_keyfile_path = auth_config.cert_auth.keyfile_path
+
             login_response = login_handler(
                 http_service=self._http_service,
                 basic_auth=None
             )
-            
+
             self._auth_cache = auth_config
             self._access_token = login_response.access_token
-            
-            if login_response.session_timeout:
-                self._access_token_expires_at = time.time() + login_response.session_timeout / 1000
-            else:
-                self._access_token_expires_at = 0
-            
+            self._set_token_expiry(login_response.session_timeout)
+
             return self._access_token
-        
-        elif auth_config.basic_auth: # Performs username & password login
+        # Performs username & password login
+        elif auth_config.basic_auth:
             if not auth_config.basic_auth.username or not auth_config.basic_auth.password:
                 raise ValueError("'username' and 'password' are required.")
-            
-            basic_auth_str = self._basic_auth_header(auth_config.basic_auth.username, auth_config.basic_auth.password)
-            
+
+            basic_auth_str = self._basic_auth_header(
+                auth_config.basic_auth.username,
+                auth_config.basic_auth.password
+            )
+
             login_response = login_handler(
                 http_service=self._http_service,
                 basic_auth=basic_auth_str
             )
-            
+
+            self._auth_cache = auth_config
             self._access_token = login_response.access_token
-            
-            if login_response.session_timeout:
-                self._access_token_expires_at = time.time() + login_response.session_timeout / 1000
-            else:
-                self._access_token_expires_at = 0
-            
+            self._set_token_expiry(login_response.session_timeout)
+
             return self._access_token
-        
         else:
-            raise RuntimeError("Authentication failed. Neither certificate nor Basic Auth parameters are available.")
+            raise RuntimeError(
+                "Authentication failed. Neither certificate nor Basic Auth parameters are available."
+            )
+
+    def _set_token_expiry(self, session_timeout: Optional[float]) -> None:
+        """Calculates the local token expiry from the server-provided session timeout."""
+        
+        if session_timeout:
+            self._access_token_expires_at = time.time() + session_timeout / 1000
+        else:
+            # no timeout provided means the session does not expire
+            self._access_token_expires_at = float("inf")
             
     def logout(self) -> bool:
         try:

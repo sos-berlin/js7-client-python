@@ -12,31 +12,28 @@ from ..model.configuration.http_configuration import HTTPConfiguration
 class HTTPService:
     """
     Functionality:
-    - Uses `time.monotonic` to obtain a monotonically increasing time source and
-    avoid issues caused by system time changes (e.g. daylight saving time)
-    - Closes the connection to the server after 30 seconds of inactivity and reopen the connection after the next use again.
+    - Keeps the connection open permanently and reuses it across requests.
+    - Reconnects and retries a request once if the connection has been
+      closed by the server or dropped in the meantime.
     """
-    
-    IDLE_TIMEOUT = 30 # Reconnects after 30 seconds of inactivity
-    
+
     def __init__(
-        self, 
-        *, 
+        self,
+        *,
         configuration: HTTPConfiguration,
         response_validator: Optional[Callable[[str, int, bytes], None]] = None
     ):
-    
+
         self._config = configuration
         self._response_validator = response_validator
-        
+
         self._conn: Union[http.client.HTTPSConnection, http.client.HTTPConnection, None] = None
         self._https_ctx: Optional[SSLContext] = None
-        self._last_used: float = 0.0
 
         # These variables can be modified at runtime by other methods to adjust the SSL context
         self.auth_certfile_path: Optional[Union[Path, str]] = None
         self.auth_keyfile_path:  Optional[Union[Path, str]] = None
-        
+
     def __enter__(self):
         self._ensure_connection()
         return self
@@ -46,20 +43,19 @@ class HTTPService:
             self.close()
 
     def _ensure_connection(self):
-        now = time.monotonic()
-        if self._conn is None or (now - self._last_used) > self.IDLE_TIMEOUT:
+        if self._conn is None:
             self._open_connection()
-    
+
     # Creates the context for the ssl connection
     def _create_ssl_context(self) -> SSLContext:
         if self._https_ctx:
             return self._https_ctx
-        
+
         ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
 
         # Sets fixed tls version
         ctx.minimum_version = ssl.TLSVersion.TLSv1_2
-        
+
         # Optional: Server Certificate
         if self._config.cafile_path:
             ctx.load_verify_locations(cafile=self._config.cafile_path)
@@ -67,7 +63,7 @@ class HTTPService:
         # Optional: Client certificate
         if self.auth_certfile_path and not self.auth_keyfile_path:
             raise ValueError("client certificate provided without private key")
-        
+
         if self.auth_certfile_path and self.auth_keyfile_path:
             ctx.load_cert_chain(
                 certfile=self.auth_certfile_path,
@@ -82,89 +78,102 @@ class HTTPService:
 
     def _open_connection(self):
         self.close()
-        
+
         if self._config.ssl:
             self._conn = http.client.HTTPSConnection(
                 host=self._config.host,
                 port=self._config.port,
-                timeout=30,
+                timeout=30,  # socket timeout per operation, not an idle timeout
                 context=self._create_ssl_context()
             )
         else:
             self._conn = http.client.HTTPConnection(
-                host=self._config.host, 
-                port=self._config.port, 
+                host=self._config.host,
+                port=self._config.port,
                 timeout=30
             )
-        
-        self._last_used = time.monotonic()
 
-    def _request(self, method: str, path: str, headers: Dict[str, str], body: Optional[str]) -> http.client.HTTPResponse:        
+    def _request(
+        self,
+        method: str,
+        path: str,
+        headers: Dict[str, str],
+        body: Optional[Union[str, bytes, bytearray]]
+    ) -> http.client.HTTPResponse:
         self._ensure_connection()
-        
+
         conn = self._conn
         if conn is None:
             raise RuntimeError("Connection not initialized.")
-        
+
         # Encode body to UTF-8 bytes if it's a string
-        encoded_body: Optional[bytes] = body.encode("utf-8") if isinstance(body, str) else body
-    
-        response: Optional[http.client.HTTPResponse] = None
-        
-        # Reconnects and retries the request once on connection failure
+        encoded_body: Optional[Union[bytes, bytearray]] = (
+            body.encode("utf-8") if isinstance(body, str) else body
+        )
+
+        # Reconnects and retries the request once on connection failure.
         try:
             conn.request(method=method, url=path, body=encoded_body, headers=headers)
             response = conn.getresponse()
-        except (BrokenPipeError, ConnectionResetError, TimeoutError):
+        except (
+            BrokenPipeError,
+            ConnectionResetError,
+            TimeoutError,
+            ssl.SSLError,
+            http.client.CannotSendRequest,
+            http.client.RemoteDisconnected,
+        ):
             self.close()
-            
-            time.sleep(3) # Waits for 3 seconds
-            
+
+            time.sleep(3)  # Waits for 3 seconds
+
             self._open_connection()
             conn = self._conn
             if conn is None:
                 raise RuntimeError("Connection not initialized after reconnect.")
             conn.request(method=method, url=path, body=encoded_body, headers=headers)
             response = conn.getresponse()
-        
+
         return response
-    
-    def _decode_response(self, path:str, response: http.client.HTTPResponse) -> bytes:
+
+    def _decode_response(self, path: str, response: http.client.HTTPResponse) -> bytes:
         raw_bytes = response.read()
-        
-        # Raises a error for the given statuscode
+
+        # Raises an error for the given statuscode
         if self._response_validator:
             self._response_validator(path, response.status, raw_bytes)
-        
+
         if "gzip" in (response.headers.get("Content-Encoding", "")).lower():
             return gzip.decompress(raw_bytes)
-        
+
         return raw_bytes
-    
+
     # (i) close method
     def close(self):
         if self._conn:
             self._conn.close()
             self._conn = None
             self._https_ctx = None
-        
+
     # (i) POST method
     def post(self, path: str, body: Optional[str], headers: Dict[str, str]) -> bytes:
         response = self._request("POST", path, headers, body)
         return self._decode_response(path, response)
-    
+
     # (i) GET method
     def get(self, path: str, headers: Dict[str, str]) -> bytes:
         response = self._request(method="GET", path=path, headers=headers, body=None)
         return self._decode_response(path, response)
-    
-    # (i) Upload file
-    def upload_file(self, path: str, access_token: str, file: bytes, filename: str, form_fields: Optional[Dict[str, str]] = None) -> bytes:
-        self._ensure_connection()
-        conn = self._conn
-        if conn is None:
-            raise RuntimeError("Connection not initialized.")
 
+    # (i) Upload file
+    def upload_file(
+        self,
+        path: str,
+        access_token: str,
+        file: bytes,
+        filename: str,
+        form_fields: Optional[Dict[str, str]] = None
+    ) -> bytes:
         boundary = "----Boundary" + uuid.uuid4().hex
         content_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
 
@@ -194,7 +203,7 @@ class HTTPService:
         body.extend(file)
         body.extend(b"\r\n")
 
-        # closing boundary
+        # Closing boundary
         body.extend(f"--{boundary}--\r\n".encode())
 
         headers = {
@@ -203,7 +212,6 @@ class HTTPService:
             "X-Access-Token": access_token,
         }
 
-        conn.request("POST", path, body=body, headers=headers)
-        response = conn.getresponse()
-
+        # Uses _request so uploads also benefit from the reconnect/retry logic
+        response = self._request("POST", path, headers, body)
         return self._decode_response(path=path, response=response)

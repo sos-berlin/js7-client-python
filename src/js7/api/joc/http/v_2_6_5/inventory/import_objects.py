@@ -32,9 +32,6 @@ def import_objects(call: EndpointCall) -> OK:
     if not call.options:
         raise ValueError("'options' is required in function call.")
     
-    if not isinstance(call.payload, bytes):
-        raise ValueError("'payload' is not of type bytes.")
-    
     format = call.options.get("format")
     overwrite = call.options.get("overwrite")
     target_folder = call.options.get("target_folder")

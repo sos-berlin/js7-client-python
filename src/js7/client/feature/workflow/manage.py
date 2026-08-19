@@ -135,6 +135,7 @@ class Manage:
         self,
         controller_id: str,
         workflow_path: str,
+        version_id: str | None = None,
         compact: bool = False
     ):
         """
@@ -146,6 +147,9 @@ class Manage:
             
             workflow_path (str):
                 The full path of the workflow.
+                
+            version_id (str):
+                The specific version id of the workflow.
             
             compact (bool):
                 A compact response is returned if this parameter is `True`.
@@ -167,5 +171,6 @@ class Manage:
             context=self._ctx,
             controller_id=controller_id,
             workflow_path=workflow_path,
+            version_id=version_id,
             compact=compact       
         )

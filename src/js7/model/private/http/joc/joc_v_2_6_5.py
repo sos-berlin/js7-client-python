@@ -2978,7 +2978,8 @@ class OrdersFilter(BaseModel):
 
 class HistoryState(BaseModel):
     """com.sos.joc.model.common.HistoryState"""
-    text: Optional[HistoryStateText] = None
+    
+    text: Optional[HistoryStateText] = Field(default=None, validation_alias="_text")
     severity: Optional[int] = None
     """0=successful, 1=incomplete, 2=failed with a green/yellow/red representation"""
     
@@ -3897,6 +3898,7 @@ class EventType(str, Enum):
     ORDER_LOCK_ACQUIRED = "OrderLockAcquired"
     ORDER_LOCK_QUEUED = "OrderLockQueued"
     ORDER_LOCK_RELEASED = "OrderLockReleased"
+    ORDER_CAUGHT = "OrderCaught"
 
 
 class OrderLogEntryError(BaseModel):
@@ -3924,6 +3926,32 @@ class Lock(BaseModel):
     lock_state: Optional[LockState] = None
 
 
+class MovedTo(BaseModel):
+    """TODO"""
+
+    position: Optional[str] = None
+
+
+class MovedInstruction(BaseModel):
+    """TODO"""
+
+    job: Optional[str] = None
+
+
+class MovedSkipped(BaseModel):
+    """TODO"""
+
+    instruction: Optional[MovedInstruction] = None
+    reason: Optional[str] = None
+
+
+class Moved(BaseModel):
+    """TODO"""
+
+    to: Optional[MovedTo] = None
+    skipped: Optional[MovedSkipped] = None
+
+
 class OrderLogEntry(BaseModel):
     """com.sos.joc.model.history.order.OrderLogEntry"""
 
@@ -3942,6 +3970,7 @@ class OrderLogEntry(BaseModel):
     return_code: Optional[int] = None
     error: Optional[OrderLogEntryError] = None
     lock: Optional[Lock] = None
+    moved: Optional[Moved] = None # TODO
 
 
 class OrderLog(BaseModel):
@@ -3951,8 +3980,8 @@ class OrderLog(BaseModel):
     event_id: Optional[int] = None
     history_id: Optional[int] = None
     log_events: Optional[List[OrderLogEntry]] = None
-    
-    
+
+
 class TaskFilter(BaseModel):
     """com.sos.joc.model.job.TaskFilter"""
     
